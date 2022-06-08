@@ -1,0 +1,41 @@
+{
+  "name": "storyblok-nuxt-module",
+  "version": "0.0.1",
+  "description": "Storyblok module for Nuxt3",
+  "repository": "disedia/storyblok-nuxt-module",
+  "author": "Johannes Hof",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "import": "./dist/module.mjs",
+      "require": "./dist/module.cjs"
+    }
+  },
+  "main": "./dist/module.cjs",
+  "types": "./dist/types.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "nuxi dev playground",
+    "dev:build": "nuxi build playground",
+    "dev:prepare": "nuxt-module-build --stub && nuxi prepare playground",
+    "build": "nuxt-module-build",
+    "prepack": "yarn build",
+    "lint": "eslint --ext .js,.ts,.vue .",
+    "release": "yarn lint && standard-version && git push --follow-tags"
+  },
+  "dependencies": {
+    "@nuxt/kit": "^3.0.0-rc.3",
+    "@storyblok/vue": "^6.0.3",
+    "defu": "^6.0.0",
+    "pathe": "^0.3.0"
+  },
+  "devDependencies": {
+    "@nuxt/module-builder": "^0.1.7",
+    "@nuxtjs/eslint-config-typescript": "^10.0.0",
+    "eslint": "^8.16.0",
+    "nuxt": "^3.0.0-rc.3",
+    "standard-version": "^9.5.0"
+  }
+}
