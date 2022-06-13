@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'url'
 import { defu } from 'defu'
-import { defineNuxtModule, addPlugin, addServerHandler, createResolver, addComponentsDir } from '@nuxt/kit'
+import { defineNuxtModule, addPlugin, addServerHandler, createResolver, addComponentsDir, extendViteConfig } from '@nuxt/kit'
 
 export interface ModuleOptions {
 
@@ -78,5 +78,12 @@ export default defineNuxtModule<ModuleOptions>({
     addComponentsDir({ path: resolve(runtimeDir, 'components'), pathPrefix: false, global: true })
     // add app components dir for storyblok user created components
     addComponentsDir({ path: '~/storyblok', global: true, pathPrefix: false })
+
+    // Optimize axios
+    extendViteConfig((config) => {
+      config.optimizeDeps = config.optimizeDeps || {}
+      config.optimizeDeps.include = config.optimizeDeps.include || []
+      config.optimizeDeps.include.push('axios')
+    })
   }
 })
