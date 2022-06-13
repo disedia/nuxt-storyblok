@@ -1,6 +1,6 @@
 {
   "name": "storyblok-nuxt-module",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "Storyblok module for Nuxt3",
   "repository": "disedia/storyblok-nuxt-module",
   "author": "Johannes Hof",
@@ -27,8 +27,10 @@
   },
   "dependencies": {
     "@nuxt/kit": "^3.0.0-rc.3",
-    "@storyblok/vue": "^6.0.3",
+    "axios": "^0.27.2",
+    "@storyblok/js": "^1.6.1",
     "defu": "^6.0.0",
+    "ohash": "^0.1.0",
     "pathe": "^0.3.0"
   },
   "devDependencies": {
@@ -36,6 +38,7 @@
     "@nuxtjs/eslint-config-typescript": "^10.0.0",
     "eslint": "^8.16.0",
     "nuxt": "^3.0.0-rc.3",
+    "vue": "^3.2.37",
     "standard-version": "^9.5.0"
   }
 }
