@@ -1,5 +1,5 @@
 <script lang="ts">
-const nuxtApp = useNuxtApp()
+import { inject } from 'vue'
 
 export default defineComponent({
   props: {
@@ -10,7 +10,8 @@ export default defineComponent({
     }
   },
   render () {
-    const rendered = nuxtApp.$richtextRenderer.renderDocument(this.document)
+    const richtextRenderer = inject('richtextRenderer')
+    const rendered = richtextRenderer.renderDocument(this.document)
     return rendered
   }
 })

@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'url'
+import { defu } from 'defu'
 import { defineNuxtModule, addPlugin, addServerHandler, createResolver, addComponentsDir } from '@nuxt/kit'
 
 export interface ModuleOptions {
@@ -14,17 +15,25 @@ export interface ModuleOptions {
 
     /**
      * Path of storyblok v2 app for localhost and server
-     * @default /storyblok
-     * @example '/storyblok'
+     * @default /editor
+     * @example '/editor'
      * @type string
      * @docs
      */
     appPath: string
+
+    /**
+     * Enable bridge mode -> is on production always false and dev mode true but can be overwritten by url query preview=true
+     * @default nuxt.options.dev
+     * @type boolean
+     * @docs
+     */
+    enableBridge?: boolean
 }
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
-    name: 'storyblok-nuxt',
+    name: 'storyblok-nuxt-module',
     configKey: 'storyblok',
     compatibility: {
       nuxt: '^3.0.0'
@@ -32,7 +41,7 @@ export default defineNuxtModule<ModuleOptions>({
   },
   defaults: {
     accessToken: '' as string,
-    appPath: '/storyblok' as string
+    appPath: '/editor' as string
   },
   setup (options, nuxt) {
     const { resolve } = createResolver(import.meta.url)
@@ -41,6 +50,12 @@ export default defineNuxtModule<ModuleOptions>({
       // eslint-disable-next-line no-console
       console.warn('Missing Storyblok Access Token in nuxt.config.js/ts')
     }
+
+    nuxt.options.runtimeConfig.public.storyblok = defu(nuxt.options.runtimeConfig.public.storyblok, {
+      enableBridge: options.enableBridge || nuxt.options.dev,
+      accessToken: options.accessToken,
+      appPath: options.appPath
+    })
 
     // Transpile runtime
     const runtimeDir = fileURLToPath(new URL('./runtime', import.meta.url))
@@ -52,14 +67,16 @@ export default defineNuxtModule<ModuleOptions>({
       handler: resolve(runtimeDir, 'server/storyblokHandler.ts')
     })
 
+    nuxt.hook('autoImports:dirs', (dirs) => {
+      dirs.push(resolve(runtimeDir, 'composables'))
+    })
+
     // Add richtext vue plugin --> cc: https://github.com/MarvinRudolph/storyblok-rich-text-renderer
-    addPlugin(resolve(runtimeDir, 'richtext', 'plugin.ts'))
+    addPlugin(resolve(runtimeDir, 'plugins', 'storyblok'))
 
     // add components dir for storyblok helper components
-    addComponentsDir({
-      path: resolve(runtimeDir, 'components'),
-      pathPrefix: false,
-      global: true
-    })
+    addComponentsDir({ path: resolve(runtimeDir, 'components'), pathPrefix: false, global: true })
+    // add app components dir for storyblok user created components
+    addComponentsDir({ path: '~/storyblok', global: true, pathPrefix: false })
   }
 })
