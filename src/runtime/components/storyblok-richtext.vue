@@ -1,5 +1,5 @@
 <script lang="ts">
-import { inject } from 'vue'
+import { inject, defineComponent } from 'vue'
 
 export default defineComponent({
   props: {
@@ -10,7 +10,7 @@ export default defineComponent({
     }
   },
   render () {
-    const richtextRenderer = inject('richtextRenderer')
+    const richtextRenderer = inject('richtextRenderer') as any
     const rendered = richtextRenderer.renderDocument(this.document)
     return rendered
   }
