@@ -1,7 +1,7 @@
 /**
  * Inspired by useAsyncData: https://github.com/nuxt/framework/blob/main/packages/nuxt/src/app/composables/asyncData.ts
  */
-import { onBeforeMount, onServerPrefetch, onUnmounted, ref, getCurrentInstance, watch } from 'vue'
+import { onBeforeMount, onServerPrefetch, onUnmounted, ref, isRef, getCurrentInstance, watch } from 'vue'
 import type { Ref, WatchSource } from 'vue'
 import { hash } from 'ohash'
 import type { Story, StoryData } from '@storyblok/js'
