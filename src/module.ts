@@ -64,7 +64,7 @@ export default defineNuxtModule<ModuleOptions>({
     // Add supabase session endpoint to store the session on server-side
     addServerHandler({
       route: options.appPath,
-      handler: resolve(runtimeDir, 'server/storyblokHandler.ts')
+      handler: resolve(runtimeDir, 'server/storyblokHandler')
     })
 
     nuxt.hook('autoImports:dirs', (dirs) => {
