@@ -14,21 +14,26 @@ export interface ModuleOptions {
     accessToken: string
 
     /**
-     * Path of storyblok v2 app for localhost and server
+     * Path of storyblok v2 editor for localhost and server
      * @default /editor
      * @example '/editor'
      * @type string
      * @docs
      */
-    appPath: string
+    editorPath: string
 
     /**
-     * Enable bridge mode -> is on production always false and dev mode true but can be overwritten by url query preview=true
+     * Enable bridge mode -> in production always false, in dev mode true but can be overwritten by url query preview=true
      * @default nuxt.options.dev
      * @type boolean
      * @docs
      */
     enableBridge?: boolean
+
+    /**
+     *
+     */
+    rootSlug?: string
 }
 
 export default defineNuxtModule<ModuleOptions>({
@@ -41,7 +46,8 @@ export default defineNuxtModule<ModuleOptions>({
   },
   defaults: {
     accessToken: '' as string,
-    appPath: '/editor' as string
+    editorPath: '/editor' as string,
+    rootSlug: 'home' as string
   },
   setup (options, nuxt) {
     const { resolve } = createResolver(import.meta.url)
@@ -54,7 +60,8 @@ export default defineNuxtModule<ModuleOptions>({
     nuxt.options.runtimeConfig.public.storyblok = defu(nuxt.options.runtimeConfig.public.storyblok, {
       enableBridge: options.enableBridge || nuxt.options.dev,
       accessToken: options.accessToken,
-      appPath: options.appPath
+      editorPath: options.editorPath,
+      rootSlug: options.rootSlug
     })
 
     // Transpile runtime
@@ -63,7 +70,7 @@ export default defineNuxtModule<ModuleOptions>({
 
     // Add supabase session endpoint to store the session on server-side
     addServerHandler({
-      route: options.appPath,
+      route: options.editorPath,
       handler: resolve(runtimeDir, 'server/storyblokHandler')
     })
 
@@ -83,7 +90,7 @@ export default defineNuxtModule<ModuleOptions>({
     extendViteConfig((config) => {
       config.optimizeDeps = config.optimizeDeps || {}
       config.optimizeDeps.include = config.optimizeDeps.include || []
-      config.optimizeDeps.include.push('axios')
+      if (!config.optimizeDeps.include.includes('axios')) { config.optimizeDeps.include.push('axios') }
     })
   }
 })

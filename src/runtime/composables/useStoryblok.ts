@@ -1,5 +1,5 @@
 /**
- * Inspired by useAsyncData: https://github.com/nuxt/framework/blob/main/packages/nuxt/src/app/composables/asyncData.ts
+ * Based on useAsyncData: https://github.com/nuxt/framework/blob/main/packages/nuxt/src/app/composables/asyncData.ts
  */
 import { onBeforeMount, onServerPrefetch, onUnmounted, ref, isRef, getCurrentInstance, watch } from 'vue'
 import type { Ref, WatchSource } from 'vue'
@@ -7,7 +7,7 @@ import { hash } from 'ohash'
 import type { Story, StoryData } from '@storyblok/js'
 import { useStoryblokApi } from './useStoryblokApi'
 import { useStoryblokBridge } from './useStoryblokBridge'
-import { useRuntimeConfig, useNuxtApp } from '#imports'
+import { useRuntimeConfig, useNuxtApp, useRoute } from '#imports'
 
 export interface RefreshOptions {
     _initial?: boolean
@@ -24,11 +24,18 @@ export type StoryblokData<StoryData, Error> = _StoryblokData<StoryData, Error> &
 
 type MultiWatchSources = (WatchSource<unknown> | object)[]
 
-export interface UseStoryblokOptions {
+/**
+ * Todo: add Storyblok options
+ */
+export interface StoryblokQueryOptions {
+    version?: string
+    resolve_links?: string
+}
+
+export interface UseStoryblokOptions extends StoryblokQueryOptions {
     server: boolean
     lazy?: boolean
     watch?: MultiWatchSources
-    version: string
     initialCache?: boolean
 }
 
@@ -37,11 +44,20 @@ const wrapInRef = <T> (value: T | Ref<T>) => isRef(value) ? value : ref(value)
 export function useStoryblok<
     DataE = Error
 > (
-  slug: string,
+  slug?: string,
   options?: UseStoryblokOptions
 ) {
-  if (typeof slug !== 'string') {
-    throw new TypeError('asyncData slug must be a string')
+  // if slug is null or empty create a slug from the current route
+  if (!slug) {
+    const { slug: routeSlug } = useRoute().params
+    // routeSlug is a string if the current path is "/"
+    if (typeof routeSlug === 'string' && routeSlug === '') {
+      const { storyblok } = useRuntimeConfig().public
+      slug = storyblok.rootSlug
+    }
+    if (Array.isArray(routeSlug)) {
+      slug = routeSlug.join('/')
+    }
   }
   // create key from slug
   const key = `storyblok_${hash(slug)}`
@@ -98,12 +114,18 @@ export function useStoryblok<
       return nuxt.payload.data[key]
     }
     storyblokData.pending.value = true
+
+    // create Storyblok query options
+    const queryOptions: StoryblokQueryOptions = {
+      version: options.version || 'draft'
+    }
+    if (options.resolve_links) {
+      queryOptions.resolve_links = options.resolve_links
+    }
     // TODO: Cancel previous promise
     // TODO: Handle immediate errors
     nuxt._asyncDataPromises[key] = Promise.resolve(
-      storyblokApiInstance.get(`cdn/stories/${slug}`, {
-        version: 'draft'
-      })
+      storyblokApiInstance.get(`cdn/stories/${slug}`, queryOptions)
     ).then((result: Story) => {
       storyblokData.data.value = result?.data?.story as StoryData || null
       storyblokData.error.value = null
