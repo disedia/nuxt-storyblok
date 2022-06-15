@@ -1,6 +1,6 @@
 {
   "name": "storyblok-nuxt-module",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Storyblok module for Nuxt3",
   "repository": "disedia/storyblok-nuxt-module",
   "author": "Johannes Hof",
