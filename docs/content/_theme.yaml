@@ -1,0 +1,32 @@
+title: nuxt/storyblok
+
+layout: docs
+
+url: ""
+
+description: Batteries-included Storyblok integration for Nuxt.
+
+socials:
+  twitter: "DerJoghurt"
+  github: "disedia/storyblok-nuxt-module"
+
+debug: false
+
+github:
+  root: docs/content
+  edit: true
+  releases: true
+
+header:
+  title: false
+  logo: true
+
+footer:
+  credits:
+    icon: IconDocus
+    text: Powered by Docus
+    href: https://docus.com
+  icons:
+    - label: Nuxt
+      href: https://nuxtjs.org
+      component: IconNuxt

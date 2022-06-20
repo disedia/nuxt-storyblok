@@ -1,8 +1,8 @@
 {
-  "name": "storyblok-nuxt-module",
+  "name": "nuxt-storyblok",
   "version": "0.0.11",
-  "description": "Storyblok module for Nuxt3",
-  "repository": "disedia/storyblok-nuxt-module",
+  "description": "Batteries-included Storyblok integration for Nuxt3.",
+  "repository": "disedia/nuxt-storyblok",
   "author": "Johannes Hof",
   "license": "MIT",
   "exports": {
