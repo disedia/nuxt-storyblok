@@ -30,4 +30,6 @@ export default defineNuxtPlugin((nuxtApp) => {
   const options = {}
   const renderer = createRenderer(options)
   nuxtApp.vueApp.provide('richtextRenderer', renderer)
+
+  
 })

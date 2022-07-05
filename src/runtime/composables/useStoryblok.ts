@@ -100,6 +100,9 @@ export function useStoryblok<
     if (process.client && story.id && (storyblok.enableBridge || nuxt._storyblokForceBridge)) {
       useStoryblokBridge(story.id, (newStory: StoryData) => {
         storyblokData.data.value = newStory
+      },{
+        customParent: 'http://localhost:3000',
+        preventClicks: true
       })
     }
   }

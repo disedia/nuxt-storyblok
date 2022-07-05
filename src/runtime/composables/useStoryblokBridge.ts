@@ -31,6 +31,13 @@ export const useStoryblokBridge = (
   const key = `storyblok_${id}`
   let initialized = true
   const nuxtApp = useNuxtApp()
+
+  console.log('Test Function')
+
+  nuxtApp.hooks.hook('page:finish',()=>{
+    console.log('Test hook')
+  })
+
   if (!nuxtApp._storyblokBridge) {
     nuxtApp._storyblokBridge = {}
     initialized = false
@@ -41,7 +48,7 @@ export const useStoryblokBridge = (
     if (!initialized) {
       window.storyblokRegisterEvent(() => {
         const sbBridge: StoryblokBridgeV2 = new window.StoryblokBridge(options)
-        sbBridge.on(['input', 'published', 'change'], (event) => {
+        sbBridge.on(['input', 'published', 'change', 'save'], (event) => {
           if (event.action === 'input' && `storyblok_${event.story.id}` in nuxtApp._storyblokBridge) {
             nuxtApp._storyblokBridge[`storyblok_${event.story.id}`](event.story)
           }
