@@ -6,7 +6,7 @@ export interface ModuleOptions {
 
     /**
      * Storyblok API Key
-     * @default '''
+     * @default ''
      * @example '123456789'
      * @type string
      * @docs https://www.storyblok.com/tp/add-a-headless-CMS-to-nuxt-3-in-5-minutes
@@ -21,6 +21,15 @@ export interface ModuleOptions {
      * @docs
      */
     editorPath: string
+
+    /**
+     * In local development it is always req.headers.host - must be set to use live preview with your custom domain
+     * @default ''
+     * @example 'https://example.com'
+     * @type string
+     * @docs
+     */
+    editorPreviewDomain: string
 
     /**
      * Enable bridge mode -> in production always false, in dev mode true but can be overwritten by url query preview=true
@@ -46,6 +55,7 @@ export default defineNuxtModule<ModuleOptions>({
   },
   defaults: {
     accessToken: '' as string,
+    editorPreviewDomain: '' as string,
     editorPath: '/editor' as string,
     rootSlug: 'home' as string
   },
@@ -59,6 +69,7 @@ export default defineNuxtModule<ModuleOptions>({
 
     nuxt.options.runtimeConfig.public.storyblok = defu(nuxt.options.runtimeConfig.public.storyblok, {
       enableBridge: options.enableBridge || nuxt.options.dev,
+      editorPreviewDomain: options.editorPreviewDomain,
       accessToken: options.accessToken,
       editorPath: options.editorPath,
       rootSlug: options.rootSlug

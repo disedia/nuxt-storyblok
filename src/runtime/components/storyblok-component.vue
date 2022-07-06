@@ -2,7 +2,7 @@
   <component :is="blok.component" v-bind="{ ...$props, ...$attrs }" />
 </template>
 <script setup>
-defineProps({
-  blok: Object
-})
+  defineProps({
+    blok: Object
+  })
 </script>
