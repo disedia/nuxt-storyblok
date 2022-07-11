@@ -3,7 +3,7 @@ import { useRuntimeConfig } from '#imports'
 
 export default defineEventHandler((event) => {
     const { storyblok } = useRuntimeConfig().public
-    const previewURL = event.req.headers.host.includes('localhost') ? `http://${event.req.headers.host}` : storyblok.editorPreviewDomain
+    const previewURL = event.req.headers.host.includes('localhost') ? `http://${event.req.headers.host}` : storyblok.editor.previewUrl
     event.res.statusCode = 200
     event.res.end(`<!DOCTYPE html>
             <html>

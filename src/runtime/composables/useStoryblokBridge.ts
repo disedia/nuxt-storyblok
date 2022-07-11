@@ -2,7 +2,6 @@
  * Based on useStoryblokBridge: hhttps://github.com/storyblok/storyblok-js/blob/main/lib/index.ts
  */
 import type { StoryblokBridgeConfigV2, StoryData, StoryblokBridgeV2 } from '@storyblok/js'
-import { useNuxtApp } from '#imports'
 
 export const useStoryblokBridge = (
   id: Number,
@@ -27,33 +26,13 @@ export const useStoryblokBridge = (
     return
   }
 
-  // add story id and callback to nuxtApp to avoid double initialization and to manage updates
-  const key = `storyblok_${id}`
-  let initialized = true
-  const nuxtApp = useNuxtApp()
 
-  /*nuxtApp.hooks.hook('page:finish',()=>{
-    console.log('Test hook')
-  })*/
-
-  if (!nuxtApp._storyblokBridge) {
-    nuxtApp._storyblokBridge = {}
-    initialized = false
-  }
-
-  if (!(key in nuxtApp._storyblokBridge)) {
-    nuxtApp._storyblokBridge[key] = cb
-    if (!initialized) {
-      window.storyblokRegisterEvent(() => {
-        const sbBridge: StoryblokBridgeV2 = new window.StoryblokBridge(options)
-        if(sbBridge.isInEditor){
-          sbBridge.on(['input', 'published', 'change', 'save'], (event) => {
-            if (event.action === 'input' && `storyblok_${event.story.id}` in nuxtApp._storyblokBridge) {
-              nuxtApp._storyblokBridge[`storyblok_${event.story.id}`](event.story)
-            }
-          })
-        }
-      })
-    }
-  }
+  window.storyblokRegisterEvent(() => {
+    const sbBridge: StoryblokBridgeV2 = new window.StoryblokBridge(options)
+    sbBridge.on(["input", "published", "change"], (event) => {
+      if (event.action == "input" && event.story.id === id) {
+        cb(event.story)
+      }
+    })
+  })
 }

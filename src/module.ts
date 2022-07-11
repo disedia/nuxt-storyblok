@@ -1,6 +1,6 @@
-import { fileURLToPath } from 'url'
 import { defu } from 'defu'
-import { defineNuxtModule, addPlugin, addServerHandler, createResolver, addComponentsDir, extendViteConfig } from '@nuxt/kit'
+import { runtimeDir } from './utils'
+import { defineNuxtModule, addPlugin, addServerHandler, createResolver, addComponentsDir, addComponent, extendViteConfig } from '@nuxt/kit'
 
 export interface ModuleOptions {
 
@@ -13,36 +13,34 @@ export interface ModuleOptions {
      */
     accessToken: string
 
-    /**
-     * Path of storyblok v2 editor for localhost and server
-     * @default /editor
-     * @example '/editor'
-     * @type string
-     * @docs
-     */
-    editorPath: string
+    editor:{
+      /**
+       * Path of storyblok v2 editor for localhost and server
+       * @default /editor
+       * @example '/editor'
+       * @type string
+       * @docs
+       */
+      path: string
+      /**
+       * In local development it is always req.headers.host - must be set to use live preview with your custom domain
+       * @default ''
+       * @example 'https://example.com'
+       * @type string
+       * @docs
+       */
+      previewUrl: string
+    }
 
-    /**
-     * In local development it is always req.headers.host - must be set to use live preview with your custom domain
-     * @default ''
-     * @example 'https://example.com'
-     * @type string
-     * @docs
-     */
-    editorPreviewDomain: string
-
-    /**
-     * Enable bridge mode -> in production always false, in dev mode true but can be overwritten by url query preview=true
-     * @default nuxt.options.dev
-     * @type boolean
-     * @docs
-     */
-    enableBridge?: boolean
-
-    /**
-     *
-     */
-    rootSlug?: string
+    bridge: {
+      /**
+       * Enable bridge mode -> in production always false, in dev mode true but can be overwritten by url query preview=true
+       * @default nuxt.options.dev
+       * @type boolean
+       * @docs
+       */
+      enabled: boolean
+    }
 }
 
 export default defineNuxtModule<ModuleOptions>({
@@ -55,9 +53,13 @@ export default defineNuxtModule<ModuleOptions>({
   },
   defaults: {
     accessToken: '' as string,
-    editorPreviewDomain: '' as string,
-    editorPath: '/editor' as string,
-    rootSlug: 'home' as string
+    editor: {
+      path: '/editor' as string,
+      previewUrl: '' as string
+    },
+    bridge: {
+      enabled: false
+    }
   },
   setup (options, nuxt) {
     const { resolve } = createResolver(import.meta.url)
@@ -68,20 +70,22 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     nuxt.options.runtimeConfig.public.storyblok = defu(nuxt.options.runtimeConfig.public.storyblok, {
-      enableBridge: options.enableBridge || nuxt.options.dev,
-      editorPreviewDomain: options.editorPreviewDomain,
       accessToken: options.accessToken,
-      editorPath: options.editorPath,
-      rootSlug: options.rootSlug
+      editor: {
+        path: options.editor.path,
+        previewUrl: options.editor.previewUrl
+      },
+      bridge: {
+        enabled: options.bridge.enabled || nuxt.options.dev
+      }
     })
 
     // Transpile runtime
-    const runtimeDir = fileURLToPath(new URL('./runtime', import.meta.url))
     nuxt.options.build.transpile.push(runtimeDir)
 
     // Add supabase session endpoint to store the session on server-side
     addServerHandler({
-      route: options.editorPath,
+      route: options.editor.path,
       handler: resolve(runtimeDir, 'server/storyblokHandler')
     })
 
@@ -92,10 +96,20 @@ export default defineNuxtModule<ModuleOptions>({
     // Add richtext vue plugin --> cc: https://github.com/MarvinRudolph/storyblok-rich-text-renderer
     addPlugin(resolve(runtimeDir, 'plugins', 'storyblok'))
 
-    // add components dir for storyblok helper components
-    addComponentsDir({ path: resolve(runtimeDir, 'components'), pathPrefix: false, global: true })
     // add app components dir for storyblok user created components
     addComponentsDir({ path: '~/storyblok', global: true, pathPrefix: false })
+
+    //add storyblok helper components
+    addComponent({
+      name: 'StoryblokComponent',
+      filePath: `${resolve(runtimeDir, 'components')}/storyblok-component.vue`,
+      global: true
+    })
+    addComponent({
+      name: 'StoryblokRichtext',
+      filePath: `${resolve(runtimeDir, 'components')}/storyblok-richtext.vue`,
+      global: true
+    })
 
     // Optimize axios
     extendViteConfig((config) => {

@@ -1,18 +1,19 @@
 <script lang="ts">
-import { inject, defineComponent } from 'vue'
+  import { defineComponent } from 'vue'
+  import { useNuxtApp } from '#imports'
 
-export default defineComponent({
-  props: {
-    document: {
-      type: Object,
-      required: true,
-      default: () => ({})
+  export default defineComponent({
+    props: {
+      document: {
+        type: Object,
+        required: true,
+        default: () => ({})
+      }
+    },
+    render () {
+      const nuxtApp = useNuxtApp()
+      const rendered = nuxtApp._storyblokRichtextRenderer.renderDocument(this.document)
+      return rendered
     }
-  },
-  render () {
-    const richtextRenderer = inject('richtextRenderer') as any
-    const rendered = richtextRenderer.renderDocument(this.document)
-    return rendered
-  }
-})
+  })
 </script>

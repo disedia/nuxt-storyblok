@@ -20,16 +20,15 @@ const vEditableDirective: ObjectDirective = {
 }
 
 export default defineNuxtPlugin((nuxtApp) => {
-  // Add Storyblok directive
-  nuxtApp.vueApp.directive('editable', vEditableDirective)
-
+  // Add Storyblok Plugin
+  nuxtApp.vueApp.directive("editable", vEditableDirective)
   // Add richtext renderer
   /*
   * TODO: enable more features to extend the renderer
   */
   const options = {}
   const renderer = createRenderer(options)
-  nuxtApp.vueApp.provide('richtextRenderer', renderer)
+  nuxtApp._storyblokRichtextRenderer = renderer
 
   
 })

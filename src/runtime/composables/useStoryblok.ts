@@ -4,7 +4,7 @@
 import { onBeforeMount, onServerPrefetch, onUnmounted, ref, isRef, getCurrentInstance, watch } from 'vue'
 import type { Ref, WatchSource } from 'vue'
 import { hash } from 'ohash'
-import type { Story, StoryData } from '@storyblok/js'
+import type { Story, StoryData, StoryblokBridgeConfigV2 } from '@storyblok/js'
 import { useStoryblokApi } from './useStoryblokApi'
 import { useStoryblokBridge } from './useStoryblokBridge'
 import { useRuntimeConfig, useNuxtApp, useRoute } from '#imports'
@@ -33,7 +33,7 @@ export interface StoryblokQueryOptions {
 }
 
 export interface UseStoryblokOptions extends StoryblokQueryOptions {
-    server: boolean
+    server?: boolean
     lazy?: boolean
     watch?: MultiWatchSources
     initialCache?: boolean
@@ -52,8 +52,8 @@ export function useStoryblok<
     const { slug: routeSlug } = useRoute().params
     // routeSlug is a string if the current path is "/"
     if (typeof routeSlug === 'string' && routeSlug === '') {
-      const { storyblok } = useRuntimeConfig().public
-      slug = storyblok.rootSlug
+      //const { storyblok } = useRuntimeConfig().public
+      slug = 'home'
     }
     if (Array.isArray(routeSlug)) {
       slug = routeSlug.join('/')
@@ -73,6 +73,7 @@ export function useStoryblok<
 
   // Setup hook callbacks once per instance
   const instance = getCurrentInstance()
+
   if (instance && !instance._nuxtOnBeforeMountCbs) {
     const cbs = instance._nuxtOnBeforeMountCbs = []
     if (instance && process.client) {
@@ -97,13 +98,22 @@ export function useStoryblok<
 
   const initBridge = (story : StoryData) => {
     // enable bride on client side, if story is available and bridge is enabled
-    if (process.client && story.id && (storyblok.enableBridge || nuxt._storyblokForceBridge)) {
-      useStoryblokBridge(story.id, (newStory: StoryData) => {
-        storyblokData.data.value = newStory
-      },{
-        customParent: 'http://localhost:3000',
-        preventClicks: true
-      })
+    if (process.client && story.id && (storyblok.bridge.enabled || nuxt._storyblok.forceBridge)) {
+      const bridgeOptions = {
+        preventClicks : true
+      } as StoryblokBridgeConfigV2
+      //set custom parent
+      if(window.location.hostname === 'localhost'){
+        bridgeOptions.customParent = window.location.origin
+      }else{
+        if(storyblok.editor.previewUrl !== ''){
+          bridgeOptions.customParent = storyblok.editor.previewUrl
+        }
+      }
+      useStoryblokBridge(story.id, (updatedStory: StoryData) => {
+        storyblokData.data.value = updatedStory
+        nuxt.payload.data[key] = storyblokData.data.value
+      }, bridgeOptions)
     }
   }
 
@@ -177,14 +187,11 @@ export function useStoryblok<
     if (options.watch) {
       watch(options.watch, () => storyblokData.refresh())
     }
-    const off = () => {
-      // TODO: unsubscribe bridge
-      nuxt.hook('app:data:refresh', (keys) => {
-        if (!keys || keys.includes(key)) {
-          return storyblokData.refresh()
-        }
-      })
-    }
+    const off = nuxt.hook('app:data:refresh', (keys) => {
+      if (!keys || keys.includes(key)) {
+        return storyblokData.refresh()
+      }
+    })
     if (instance) {
       onUnmounted(off)
     }
