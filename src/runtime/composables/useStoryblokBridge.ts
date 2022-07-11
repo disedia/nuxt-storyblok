@@ -26,7 +26,6 @@ export const useStoryblokBridge = (
     return
   }
 
-
   window.storyblokRegisterEvent(() => {
     const sbBridge: StoryblokBridgeV2 = new window.StoryblokBridge(options)
     sbBridge.on(["input", "published", "change"], (event) => {

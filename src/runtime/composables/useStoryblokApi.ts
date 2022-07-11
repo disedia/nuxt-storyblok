@@ -3,7 +3,7 @@ import {
   apiPlugin
 } from '@storyblok/js'
 import type { SbInitResult, StoryblokClient } from '@storyblok/js'
-import { useRuntimeConfig, useNuxtApp, useRoute } from '#imports'
+import { useRuntimeConfig, useNuxtApp } from '#imports'
 
 export function useStoryblokApi (): StoryblokClient {
   const nuxtApp = useNuxtApp()
@@ -11,12 +11,13 @@ export function useStoryblokApi (): StoryblokClient {
   if (!nuxtApp._storyblok) {
     const { storyblok } = useRuntimeConfig().public
     nuxtApp._storyblok = {}
-    // check route query if preview is true -> sets variable to force bridge mode
+    // check app is in editor mode -> sets variable to force bridge mode
     if (process.client) {
       nuxtApp._storyblok.forceBridge = false
-      const { query } = useRoute()
-      if (query.preview === 'true') {
-        nuxtApp._storyblok.forceBridge = true
+      if (window.self !== window.top) {
+        if(window.top.location.pathname===storyblok.editor.path){
+          nuxtApp._storyblok.forceBridge = true
+        }
       }
     }
     const client = storyblokInit({

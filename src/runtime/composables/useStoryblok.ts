@@ -171,11 +171,14 @@ export function useStoryblok<
 
   // Client side
   if (process.client) {
+    // init bridge if story is already loaded
+    //TODO: nuxt.isHydrating -> check why it is false with second call
+    if(fetchOnServer && key in nuxt.payload.data){
+      initBridge(storyblokData.data.value)
+    }
     if (fetchOnServer && nuxt.isHydrating && key in nuxt.payload.data) {
       // 1. Hydration (server: true): no fetch
       storyblokData.pending.value = false
-      // init bridge if story is already loaded and hydated
-      initBridge(storyblokData.data.value)
     } else if (instance && nuxt.payload.serverRendered && (nuxt.isHydrating || options.lazy)) {
       // 2. Initial load (server: false): fetch on mounted
       // 3. Navigation (lazy: true): fetch on mounted
