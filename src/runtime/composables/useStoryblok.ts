@@ -29,7 +29,8 @@ type MultiWatchSources = (WatchSource<unknown> | object)[]
  */
 export interface StoryblokQueryOptions {
     version?: string
-    resolve_links?: string
+    resolve_links?: string,
+    resolve_relations?: [string]
 }
 
 export interface UseStoryblokOptions extends StoryblokQueryOptions {
@@ -102,6 +103,9 @@ export function useStoryblok<
       const bridgeOptions = {
         preventClicks : true
       } as StoryblokBridgeConfigV2
+      if (options.resolve_relations) {
+        bridgeOptions.resolveRelations = options.resolve_relations
+      }
       //set custom parent
       if(window.location.hostname === 'localhost'){
         bridgeOptions.customParent = window.location.origin
@@ -134,6 +138,9 @@ export function useStoryblok<
     }
     if (options.resolve_links) {
       queryOptions.resolve_links = options.resolve_links
+    }
+    if (options.resolve_relations) {
+      queryOptions.resolve_relations = options.resolve_relations
     }
     // TODO: Cancel previous promise
     // TODO: Handle immediate errors

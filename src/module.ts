@@ -13,7 +13,7 @@ export interface ModuleOptions {
      */
     accessToken: string
 
-    editor:{
+    editor?:{
       /**
        * Path of storyblok v2 editor for localhost and server
        * @default /editor
@@ -21,7 +21,7 @@ export interface ModuleOptions {
        * @type string
        * @docs
        */
-      path: string
+      path?: string
       /**
        * In local development it is always req.headers.host - must be set to use live preview with your custom domain
        * @default ''
@@ -29,17 +29,17 @@ export interface ModuleOptions {
        * @type string
        * @docs
        */
-      previewUrl: string
+      previewUrl?: string
     }
 
-    bridge: {
+    bridge?: {
       /**
        * Enable bridge mode -> in production always false, in dev mode true but can be overwritten by url query preview=true
        * @default nuxt.options.dev
        * @type boolean
        * @docs
        */
-      enabled: boolean
+      enabled?: boolean
     }
 }
 
