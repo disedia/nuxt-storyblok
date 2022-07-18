@@ -4,7 +4,7 @@
 import type { StoryblokBridgeConfigV2, StoryData, StoryblokBridgeV2 } from '@storyblok/js'
 
 export const useStoryblokBridge = (
-  id: Number,
+  ids: number[],
   cb: (newStory: StoryData) => void,
   options: StoryblokBridgeConfigV2 = {}
 ) => {
@@ -21,7 +21,7 @@ export const useStoryblokBridge = (
     return
   }
 
-  if (!id) {
+  if (!ids) {
     console.warn('Story ID is not defined. Please provide a valid ID.')
     return
   }
@@ -29,7 +29,7 @@ export const useStoryblokBridge = (
   window.storyblokRegisterEvent(() => {
     const sbBridge: StoryblokBridgeV2 = new window.StoryblokBridge(options)
     sbBridge.on(["input", "published", "change"], (event) => {
-      if (event.action == "input" && event.story.id === id) {
+      if (event.action == "input" && ids.indexOf(event.story.id) !== -1) {
         cb(event.story)
       }
     })
