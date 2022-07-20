@@ -4,7 +4,7 @@
 import { onBeforeMount, onServerPrefetch, onUnmounted, ref, isRef, getCurrentInstance, watch } from 'vue'
 import type { Ref, WatchSource } from 'vue'
 import { hash } from 'ohash'
-import type { Story,  Stories, StoryData, StoryblokBridgeConfigV2, StoriesParams } from '@storyblok/js'
+import type { StoryData, StoryblokBridgeConfigV2, StoriesParams, StoryParams, StoryblokResult } from '@storyblok/js'
 import { useStoryblokApi } from './useStoryblokApi'
 import { useStoryblokBridge } from './useStoryblokBridge'
 import { useRuntimeConfig, useNuxtApp } from '#imports'
@@ -22,23 +22,17 @@ export interface RefreshOptions {
   _initial?: boolean
 }
 
-export interface StoryQueryOptions {
-  version?: StoriesParams['version']
-  resolve_links?: StoriesParams['resolve_links'],
-  resolve_relations?: [string]
-}
-
 export interface _StoryblokData<DataT, ErrorT> {
-  result: Ref<DataT>
+  data: Ref<DataT>
   pending: Ref<boolean>
-  refresh: (fetchFunction: Function, opts?: RefreshOptions) => Promise<void>
+  refresh: (fetchUrl: string, opts?: RefreshOptions) => Promise<void>
   error: Ref<ErrorT>
 }
 export type StoryblokData<Data, Error> = _StoryblokData<Data, Error> & Promise<_StoryblokData<Data, Error>>
 
-export interface useStoryblokReturn extends StoryblokData<Story|Stories, Error>{
-  getStories: () => StoryblokData<Stories, Error>
-  getStory: (slug: string) => StoryblokData<Story, Error>
+export interface useStoryblokReturn extends StoryblokData<StoryData|StoryData[], Error>{
+  getStories: () => StoryblokData<StoryData[], Error>
+  getStory: (slug: string) => StoryblokData<StoryData, Error>
 }
 
 const wrapInRef = <T> (value: T | Ref<T>) => isRef(value) ? value : ref(value)
@@ -58,7 +52,7 @@ export function useStoryblok<useStoryblokReturn> (
   // set default storyblok query options
   const queryOptions = {
     version: 'draft'
-  } as StoryQueryOptions
+  } as StoryParams | StoriesParams
   // Setup nuxt instance payload
   const nuxt = useNuxtApp()
   const { storyblok } = useRuntimeConfig().public
@@ -81,12 +75,12 @@ export function useStoryblok<useStoryblokReturn> (
   const useInitialCache = () => options.initialCache && nuxt.payload.data[key] !== undefined
 
   const storyblokData = {
-    result: wrapInRef(nuxt.payload.data[key]),
+    data: wrapInRef(nuxt.payload.data[key]),
     pending: ref(!useInitialCache()),
     error: ref(nuxt.payload._errors[key] ?? null)
-  } as StoryblokData<Story|Stories|null, Error|null>
+  } as StoryblokData<StoryData | StoryData[] | null, Error | null>
 
-  storyblokData.refresh = (fetchFunction, opts?: RefreshOptions) => {
+  storyblokData.refresh = (fetchUrl: string, opts?: RefreshOptions) => {
     // Avoid fetching same key more than once at a time
     if (nuxt._asyncDataPromises[key]) {
       return nuxt._asyncDataPromises[key]
@@ -97,22 +91,30 @@ export function useStoryblok<useStoryblokReturn> (
     }
     storyblokData.pending.value = true
 
+
     // TODO: Cancel previous promise
     // TODO: Handle immediate errors
     nuxt._asyncDataPromises[key] = Promise.resolve(
-      fetchFunction
-    ).then((result: any) => {
+      storyblokApiInstance.get(fetchUrl, queryOptions)
+    ).then((result: StoryblokResult) => {
+      let data: StoryData | StoryData[] | null = null
+      if(fetchUrl === 'cdn/stories'){
+        data = result.data.stories as StoryData[]
+      }
+      else if(fetchUrl.includes('cdn/stories/')){
+        data = result.data.story as StoryData
+      }
       // init bridge
-      initBridge(result)
-      storyblokData.result.value = result
+      initBridge(data)
+      storyblokData.data.value = data
       storyblokData.error.value = null
     }).catch((error: any) => {
-      console.log(error)
+      console.error(error)
       storyblokData.error.value = error
-      storyblokData.result.value = null
+      storyblokData.data.value = null
     }).finally(() => {
       storyblokData.pending.value = false
-      nuxt.payload.data[key] = storyblokData.result.value
+      nuxt.payload.data[key] = storyblokData.data.value
       if (storyblokData.error.value) {
         nuxt.payload._errors[key] = true
       }
@@ -121,23 +123,30 @@ export function useStoryblok<useStoryblokReturn> (
     return nuxt._asyncDataPromises[key]
   }
 
-  const initBridge = (result: any) => {
-    let resultIsArray = false
+  const isStoryData = (data: any): data is StoryData => {
+    return typeof data.id !== undefined 
+  }
+  const isStoriesData = (data: any): data is StoryData[] => {
+    return typeof data.id === undefined 
+  }
+
+  let bridgeInitialized = false
+
+  const initBridge = (data: StoryData | StoryData[]) => {
     const storyIds = [] as number[]
-    if(result.data?.story){
-      storyIds.push(result.data.story.id)
+    if(isStoryData(data)){
+      storyIds.push(data.id)
     }
-    if(result.data?.stories){
-      resultIsArray = true
-      result.data.stories.map((story)=> storyIds.push(story.id))
+    if(isStoriesData(data)){
+      data.map((story)=> storyIds.push(story.id))
     }
     // enable bride on client side, if story is available and bridge is enabled
-    if (process.client && storyIds.length > 0 && (storyblok.bridge.enabled || nuxt._storyblok.forceBridge)) {
+    if (process.client && !bridgeInitialized && storyIds.length > 0 && (storyblok.bridge.enabled || nuxt._storyblok.forceBridge)) {
       const bridgeOptions = {
         preventClicks : true
       } as StoryblokBridgeConfigV2
       if (queryOptions.resolve_relations) {
-        bridgeOptions.resolveRelations = queryOptions.resolve_relations
+        bridgeOptions.resolveRelations = queryOptions.resolve_relations.trim().split(',') as [string]
       }
       //set custom parent
       if(window.location.hostname === 'localhost'){
@@ -148,23 +157,23 @@ export function useStoryblok<useStoryblokReturn> (
         }
       }
       useStoryblokBridge(storyIds, (updatedStory: StoryData) => {
-        if(!resultIsArray){
-          storyblokData.result.value.data.story = updatedStory
+        if(isStoryData(storyblokData.data.value)){
+          storyblokData.data.value = updatedStory
         }
-        if(resultIsArray){
-          const storyIndex = storyblokData.result.value.data.stories.findIndex((story)=>story.id===updatedStory.id)
+        if(isStoriesData(storyblokData.data.value)){
+          const storyIndex = storyblokData.data.value.findIndex((story)=>story.id===updatedStory.id)
           if(storyIndex > -1){
-            storyblokData.result.value.data.stories.splice(storyIndex, 1, updatedStory)
+            storyblokData.data.value.splice(storyIndex, 1, updatedStory)
           }
         }
       }, bridgeOptions)
+      bridgeInitialized = true
     }
   }
 
-
-  const sbFetch = (fetchFunction) => {
+  const initFetch = (fetchUrl) => {
     // create initial fetch function
-    const initialFetch = () => storyblokData.refresh(fetchFunction,{ _initial: true })
+    const initialFetch = () => storyblokData.refresh(fetchUrl,{ _initial: true })
 
     const fetchOnServer = options.server !== false && nuxt.payload.serverRendered
 
@@ -172,21 +181,20 @@ export function useStoryblok<useStoryblokReturn> (
     if (process.server && fetchOnServer) {
       const promise = initialFetch()
       onServerPrefetch(() => promise)
+      //BUG: nuxt.isHydrating -> is always false in calls from nested components
+      nuxt.payload[`_sbHydrated_${key}`] = true
     }
 
     // Client side
     if (process.client) {
       // init bridge if story is already loaded
-      //TODO: nuxt.isHydrating -> check why it is false with second call
-      if(fetchOnServer && key in nuxt.payload.data){
-        console.log('init bridge on client',nuxt.payload)
-        storyblokData.result.value = nuxt.payload.data[key]
-        initBridge(storyblokData.result.value)
-      }
-      if (fetchOnServer && nuxt.isHydrating && key in nuxt.payload.data) {
+      //TODO BUG: nuxt.isHydrating -> is always false in calls from nested components, so currently use own payload var nuxt.payload[`_sbHydrated_${key}`] 
+      if (fetchOnServer && nuxt.payload[`_sbHydrated_${key}`] && key in nuxt.payload.data) {
         // 1. Hydration (server: true): no fetch
+        storyblokData.data.value = nuxt.payload.data[key]
         storyblokData.pending.value = false
-      } else if (instance && nuxt.payload.serverRendered && (nuxt.isHydrating || options.lazy)) {
+        initBridge(storyblokData.data.value)
+      } else if (instance && nuxt.payload.serverRendered && (nuxt.payload[`_sbHydrated_${key}`] || options.lazy)) {
         // 2. Initial load (server: false): fetch on mounted
         // 3. Navigation (lazy: true): fetch on mounted
         instance._nuxtOnBeforeMountCbs.push(initialFetch)
@@ -195,32 +203,29 @@ export function useStoryblok<useStoryblokReturn> (
         initialFetch()
       }
       if (options.watch) {
-        watch(options.watch, () => storyblokData.refresh(fetchFunction))
+        watch(options.watch, () => storyblokData.refresh(fetchUrl))
       }
       const off = nuxt.hook('app:data:refresh', (keys) => {
         if (!keys || keys.includes(key)) {
-          return storyblokData.refresh(fetchFunction)
+          return storyblokData.refresh(fetchUrl)
         }
       })
       if (instance) {
         onUnmounted(off)
       }
+      //set nuxt.payload[`_sbHydrated_${key}`] to false, because it is already hydrated once
+      nuxt.payload[`_sbHydrated_${key}`] = false
     }
   }
 
-  const getStory = (slug: string, opts: StoryQueryOptions) => {
-    // create Storyblok query options
-    if (opts.resolve_links) {
-      queryOptions.resolve_links = opts.resolve_links
-    }
-    if (opts.resolve_relations) {
-      queryOptions.resolve_relations = opts.resolve_relations
-    }
+  const getStory = (slug: string, opts: StoryParams) => {
+    // assign Storyblok query options
+    Object.assign(queryOptions , opts)
 
-    sbFetch(storyblokApiInstance.get(`cdn/stories/${slug}`, queryOptions))
+    initFetch(`cdn/stories/${slug}`)
 
     // Allow directly awaiting on asyncData
-    const storyblokDataPromise = Promise.resolve(nuxt._asyncDataPromises[key]).then(() => storyblokData) as StoryblokData<Story, Error>
+    const storyblokDataPromise = Promise.resolve(nuxt._asyncDataPromises[key]).then(() => storyblokData) as StoryblokData<StoryData, Error>
     Object.assign(storyblokDataPromise, storyblokData)
 
     return storyblokDataPromise
@@ -228,9 +233,10 @@ export function useStoryblok<useStoryblokReturn> (
 
   const getStories = (opts: StoriesParams) => {
     Object.assign(queryOptions , opts)
-    sbFetch(storyblokApiInstance.get('cdn/stories', queryOptions))
+
+    initFetch('cdn/stories')
     // Allow directly awaiting on asyncData
-    const storyblokDataPromise = Promise.resolve(nuxt._asyncDataPromises[key]).then(() => storyblokData) as StoryblokData<Stories, Error>
+    const storyblokDataPromise = Promise.resolve(nuxt._asyncDataPromises[key]).then(() => storyblokData) as StoryblokData<StoryData[], Error>
     Object.assign(storyblokDataPromise, storyblokData)
 
     return storyblokDataPromise
