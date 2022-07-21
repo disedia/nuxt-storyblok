@@ -14,7 +14,7 @@ export function useStoryblokApi (): StoryblokClient {
     if (process.client) {
       nuxtApp._storyblok.forceBridge = false
       if ((window.self !== window.top) && nuxtApp._storyblok.previewMode) {
-        if(window.top.location.pathname===storyblok.editor.path){
+        if (window.top.location.pathname === storyblok.editor.path) {
           nuxtApp._storyblok.forceBridge = true
         }
       }

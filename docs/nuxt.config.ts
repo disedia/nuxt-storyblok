@@ -6,12 +6,12 @@ export default defineNuxtConfig({
   github: {
     owner: 'disedia',
     repo: 'nuxt-storyblok',
-    branch: 'main',
+    branch: 'main'
   },
   theme: {},
   modules: ['@nuxthq/admin', '@docus/github', 'vue-plausible'],
   plausible: {
-    domain: 'ionic.roe.dev',
+    domain: 'ionic.roe.dev'
   },
   tailwindcss: {
     config: {
@@ -20,23 +20,23 @@ export default defineNuxtConfig({
         extend: {
           colors: {
             primary: {
-              '50': '#84c3ff',
-              '100': '#7ab9ff',
-              '200': '#70afff',
-              '300': '#66a5ff',
-              '400': '#5c9bff',
-              '500': '#5291ff',
-              '600': '#4887f5',
-              '700': '#3e7deb',
-              '800': '#3473e1',
-              '900': '#2a69d7',
-            },
-          },
-        },
-      },
-    },
+              50: '#84c3ff',
+              100: '#7ab9ff',
+              200: '#70afff',
+              300: '#66a5ff',
+              400: '#5c9bff',
+              500: '#5291ff',
+              600: '#4887f5',
+              700: '#3e7deb',
+              800: '#3473e1',
+              900: '#2a69d7'
+            }
+          }
+        }
+      }
+    }
   },
   colorMode: {
-    preference: 'dark',
-  },
+    preference: 'dark'
+  }
 })

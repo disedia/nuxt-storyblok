@@ -28,8 +28,8 @@ export const useStoryblokBridge = (
 
   window.storyblokRegisterEvent(() => {
     const sbBridge: StoryblokBridgeV2 = new window.StoryblokBridge(options)
-    sbBridge.on(["input", "published", "change"], (event) => {
-      if (event.action == "input" && ids.indexOf(event.story.id) !== -1) {
+    sbBridge.on(['input', 'published', 'change'], (event) => {
+      if (event.action === 'input' && ids.includes(event.story.id)) {
         cb(event.story)
       }
     })

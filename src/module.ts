@@ -1,6 +1,6 @@
 import { defu } from 'defu'
-import { runtimeDir } from './utils'
 import { defineNuxtModule, addPlugin, addServerHandler, createResolver, addComponentsDir, addComponent, extendViteConfig } from '@nuxt/kit'
+import { runtimeDir } from './utils'
 
 export interface ModuleOptions {
 
@@ -84,7 +84,7 @@ export default defineNuxtModule<ModuleOptions>({
       editor: {
         path: options.editor.path,
         previewUrl: options.editor.previewUrl,
-        forceDevPreview: nuxt.options.dev ? options.editor.forceDevPreview : false,   
+        forceDevPreview: nuxt.options.dev ? options.editor.forceDevPreview : false
       },
       bridge: {
         enabled: options.bridge.enabled || nuxt.options.dev
@@ -114,7 +114,7 @@ export default defineNuxtModule<ModuleOptions>({
     // add app components dir for storyblok user created components
     addComponentsDir({ path: '~/storyblok', global: true, pathPrefix: false })
 
-    //add storyblok helper components
+    // add storyblok helper components
     addComponent({
       name: 'StoryblokComponent',
       filePath: `${resolve(runtimeDir, 'components')}/storyblok-component.vue`,
