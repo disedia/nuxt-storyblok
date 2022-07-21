@@ -1,6 +1,6 @@
 {
   "name": "nuxt-storyblok",
-  "version": "0.0.15",
+  "version": "0.0.17",
   "description": "Batteries-included Storyblok integration for Nuxt3.",
   "repository": "disedia/nuxt-storyblok",
   "author": "Johannes Hof",
