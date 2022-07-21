@@ -35,7 +35,11 @@ export interface RendererOptions {
   omitParagraphInListItems?: boolean
 }
 
-export function createRenderer (options?: Partial<RendererOptions>) {
+export interface RichtextRenderer {
+  renderDocument: Function
+}
+
+export function createRenderer (options?: Partial<RendererOptions>): RichtextRenderer {
   const {
     resolvers = options?.resolvers || { ...defaultResolvers, components: {} },
     omitParagraphInListItems = false

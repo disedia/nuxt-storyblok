@@ -2,8 +2,17 @@ import {
   storyblokEditable
 } from '@storyblok/js'
 import { DirectiveBinding, ObjectDirective } from 'vue'
-import { createRenderer } from '../richtext/renderer'
-import { defineNuxtPlugin } from '#imports'
+import { createRenderer, RichtextRenderer } from '../richtext/renderer'
+import type { StoryblokClient } from '@storyblok/js'
+import { defineNuxtPlugin, useRoute, useRuntimeConfig } from '#imports'
+
+export interface StoryblokRuntimeSettings {
+  richtextRenderer: RichtextRenderer
+  version: 'draft' | 'published'
+  previewMode: boolean
+  forceBridge: boolean
+  client: StoryblokClient
+}
 
 /**
 * Vue directive "v-editable" for Storyblok
@@ -28,7 +37,20 @@ export default defineNuxtPlugin((nuxtApp) => {
   */
   const options = {}
   const renderer = createRenderer(options)
-  nuxtApp._storyblokRichtextRenderer = renderer
-
-  
+  // write storyblok runtime context
+  nuxtApp._storyblok = {} as StoryblokRuntimeSettings
+  nuxtApp._storyblok.richtextRenderer = renderer
+  nuxtApp._storyblok.version = 'published'
+  // check if storyblok is in editor mode 
+  const { query  } = useRoute()
+  //TODO: verify storyblok query params for security reasons
+  if(query._storyblok){
+    nuxtApp._storyblok.previewMode = true
+    //add preview token to runtime if in editor or preview mode
+    nuxtApp._storyblok.previewToken = useRuntimeConfig().storyblokPreviewToken
+    nuxtApp._storyblok.version = 'draft'
+  }else if(useRuntimeConfig().public.storyblok.editor.forceDevPreview){
+    nuxtApp._storyblok.previewToken = useRuntimeConfig().storyblokPreviewToken
+    nuxtApp._storyblok.version = 'draft'
+  }
 })

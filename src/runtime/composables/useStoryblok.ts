@@ -31,16 +31,16 @@ export interface _StoryblokData<DataT, ErrorT> {
 export type StoryblokData<Data, Error> = _StoryblokData<Data, Error> & Promise<_StoryblokData<Data, Error>>
 
 export interface useStoryblokReturn extends StoryblokData<StoryData|StoryData[], Error>{
-  getStories: () => StoryblokData<StoryData[], Error>
-  getStory: (slug: string) => StoryblokData<StoryData, Error>
+  getStories: (pts: StoryParams) => StoryblokData<StoryData[], Error>
+  getStory: (slug: string, opts: StoryParams) => StoryblokData<StoryData, Error>
 }
 
 const wrapInRef = <T> (value: T | Ref<T>) => isRef(value) ? value : ref(value)
 
-export function useStoryblok<useStoryblokReturn> (
+export function useStoryblok (
   key: string,
   options?: UseStoryblokOptions
-) {
+): useStoryblokReturn {
   if (typeof key !== 'string') {
     throw new TypeError('[nuxt-storyblok] [useStoryblok] key must be a string.')
   }
@@ -49,13 +49,16 @@ export function useStoryblok<useStoryblokReturn> (
   options = { server: true, ...options }
   // Apply defaults
   options.server = options.server ?? true
-  // set default storyblok query options
-  const queryOptions = {
-    version: 'draft'
-  } as StoryParams | StoriesParams
   // Setup nuxt instance payload
   const nuxt = useNuxtApp()
   const { storyblok } = useRuntimeConfig().public
+  /** 
+   * set default storyblok query options 
+   * -> version in preview or editor is always 'draft' or dependent if dev mode or production
+   * */ 
+  const queryOptions = {
+    version: nuxt._storyblok.version
+  } as StoryParams | StoriesParams
   // get storyblok api
   const storyblokApiInstance = useStoryblokApi()
 
@@ -124,10 +127,10 @@ export function useStoryblok<useStoryblokReturn> (
   }
 
   const isStoryData = (data: any): data is StoryData => {
-    return typeof data.id !== undefined 
+    return typeof data?.id !== undefined 
   }
   const isStoriesData = (data: any): data is StoryData[] => {
-    return typeof data.id === undefined 
+    return typeof data?.id === undefined 
   }
 
   let bridgeInitialized = false

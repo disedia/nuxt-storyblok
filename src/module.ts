@@ -5,7 +5,7 @@ import { defineNuxtModule, addPlugin, addServerHandler, createResolver, addCompo
 export interface ModuleOptions {
 
     /**
-     * Storyblok API Key
+     * Storyblok Public API Key
      * @default ''
      * @example '123456789'
      * @type string
@@ -30,6 +30,16 @@ export interface ModuleOptions {
        * @docs
        */
       previewUrl?: string
+
+      /**
+       * Storyblok preview token -> automatically used in editor or preview mode if set
+      */
+      previewToken?: string
+
+      /**
+       * Usually previewToken is only used inside editor, this setting forces the usage of previewToken outside of the editor but limited to dev mode
+       */
+      forceDevPreview?: boolean
     }
 
     bridge?: {
@@ -55,7 +65,8 @@ export default defineNuxtModule<ModuleOptions>({
     accessToken: '' as string,
     editor: {
       path: '/editor' as string,
-      previewUrl: '' as string
+      previewUrl: '' as string,
+      forceDevPreview: false as boolean
     },
     bridge: {
       enabled: false
@@ -63,7 +74,6 @@ export default defineNuxtModule<ModuleOptions>({
   },
   setup (options, nuxt) {
     const { resolve } = createResolver(import.meta.url)
-
     if (!options.accessToken) {
       // eslint-disable-next-line no-console
       console.warn('Missing Storyblok Access Token in nuxt.config.js/ts')
@@ -73,12 +83,17 @@ export default defineNuxtModule<ModuleOptions>({
       accessToken: options.accessToken,
       editor: {
         path: options.editor.path,
-        previewUrl: options.editor.previewUrl
+        previewUrl: options.editor.previewUrl,
+        forceDevPreview: nuxt.options.dev ? options.editor.forceDevPreview : false,   
       },
       bridge: {
         enabled: options.bridge.enabled || nuxt.options.dev
       }
     })
+    /*
+    * PreviewToken should be kept secret and should only be exposed in editor mode
+    */
+    nuxt.options.runtimeConfig.storyblokPreviewToken = options.editor.previewToken || options.accessToken
 
     // Transpile runtime
     nuxt.options.build.transpile.push(runtimeDir)

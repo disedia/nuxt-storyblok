@@ -12,7 +12,7 @@
     },
     render () {
       const nuxtApp = useNuxtApp()
-      const rendered = nuxtApp._storyblokRichtextRenderer.renderDocument(this.document)
+      const rendered = nuxtApp._storyblok.richtextRenderer.renderDocument(this.document)
       return rendered
     }
   })
