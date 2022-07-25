@@ -3,9 +3,9 @@
 </template>
 
 <script setup lang="ts">
-import type { SbBlokData } from '@storyblok/js'
-export interface SbComponentProps {
-    blok: SbBlokData
-  }
-defineProps<SbComponentProps>()
+  import type { SbBlokData } from '@storyblok/js'
+  export interface SbComponentProps {
+      blok: SbBlokData
+    }
+  defineProps<SbComponentProps>()
 </script>

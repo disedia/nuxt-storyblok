@@ -6,7 +6,7 @@ import type { StoryblokClient } from '@storyblok/js'
 import { createRenderer, RichtextRenderer } from '../richtext/renderer'
 import { defineNuxtPlugin, useRoute, useRuntimeConfig } from '#imports'
 
-export interface StoryblokRuntimeSettings {
+export interface StoryblokRuntime {
   richtextRenderer: RichtextRenderer
   version: 'draft' | 'published'
   previewMode: boolean
@@ -38,19 +38,20 @@ export default defineNuxtPlugin((nuxtApp) => {
   const options = {}
   const renderer = createRenderer(options)
   // write storyblok runtime context
-  nuxtApp._storyblok = {} as StoryblokRuntimeSettings
+  nuxtApp._storyblok = {} as StoryblokRuntime
   nuxtApp._storyblok.richtextRenderer = renderer
-  nuxtApp._storyblok.version = 'published'
+  nuxtApp._storyblok.version = useRuntimeConfig().public.storyblok.version
   // check if storyblok is in editor mode
   const { query } = useRoute()
   // TODO: verify storyblok query params for security reasons
   if (query._storyblok) {
     nuxtApp._storyblok.previewMode = true
+    // for security reasons, previewToken will be written to client only if called from storyblok editor or preview mode
+    if(process.server){
+      nuxtApp.payload[`_sbPreviewToken`] = useRuntimeConfig().storyblokPreviewToken
+    }
     // add preview token to runtime if in editor or preview mode
-    nuxtApp._storyblok.previewToken = useRuntimeConfig().storyblokPreviewToken
-    nuxtApp._storyblok.version = 'draft'
-  } else if (useRuntimeConfig().public.storyblok.editor.forceDevPreview) {
-    nuxtApp._storyblok.previewToken = useRuntimeConfig().storyblokPreviewToken
+    nuxtApp._storyblok.previewToken = nuxtApp.payload[`_sbPreviewToken`]
     nuxtApp._storyblok.version = 'draft'
   }
 })

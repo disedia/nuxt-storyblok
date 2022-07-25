@@ -13,6 +13,12 @@ export interface ModuleOptions {
      */
     accessToken: string
 
+    /**
+    * Forces a specific version of the Storyblok API to be used. Normally, the version is determined if you are in editor and preview mode (draft) or not (published).
+    * Be careful, it is not possible to use version 'draft' with a public access token.
+    */
+    version?: 'draft' | 'published'
+
     editor?:{
       /**
        * Path of storyblok v2 editor for localhost and server
@@ -36,15 +42,11 @@ export interface ModuleOptions {
       */
       previewToken?: string
 
-      /**
-       * Usually previewToken is only used inside editor, this setting forces the usage of previewToken outside of the editor but limited to dev mode
-       */
-      forceDevPreview?: boolean
     }
 
     bridge?: {
       /**
-       * Enable bridge mode -> in production always false, in dev mode true but can be overwritten by url query preview=true
+       * Enable bridge mode -> in production always false, in dev mode true but can be overwritten by this option
        * @default nuxt.options.dev
        * @type boolean
        * @docs
@@ -63,10 +65,10 @@ export default defineNuxtModule<ModuleOptions>({
   },
   defaults: {
     accessToken: '' as string,
+    version: 'published' as 'draft' | 'published',
     editor: {
       path: '/editor' as string,
-      previewUrl: '' as string,
-      forceDevPreview: false as boolean
+      previewUrl: '' as string
     },
     bridge: {
       enabled: false
@@ -81,17 +83,17 @@ export default defineNuxtModule<ModuleOptions>({
 
     nuxt.options.runtimeConfig.public.storyblok = defu(nuxt.options.runtimeConfig.public.storyblok, {
       accessToken: options.accessToken,
+      version: options.version,
       editor: {
         path: options.editor.path,
-        previewUrl: options.editor.previewUrl,
-        forceDevPreview: nuxt.options.dev ? options.editor.forceDevPreview : false
+        previewUrl: options.editor.previewUrl
       },
       bridge: {
         enabled: options.bridge.enabled || nuxt.options.dev
       }
     })
     /*
-    * PreviewToken should be kept secret and should only be exposed in editor mode
+    * PreviewToken should be kept secret and should only be exposed in editor mode, use accessToken as backup
     */
     nuxt.options.runtimeConfig.storyblokPreviewToken = options.editor.previewToken || options.accessToken
 

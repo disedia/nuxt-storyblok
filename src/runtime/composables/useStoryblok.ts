@@ -31,8 +31,8 @@ export interface _StoryblokData<DataT, ErrorT> {
 export type StoryblokData<Data, Error> = _StoryblokData<Data, Error> & Promise<_StoryblokData<Data, Error>>
 
 export interface useStoryblokReturn extends StoryblokData<StoryData|StoryData[], Error>{
-  getStories: (pts: StoryParams) => StoryblokData<StoryData[], Error>
-  getStory: (slug: string, opts: StoryParams) => StoryblokData<StoryData, Error>
+  getStories: (pts: StoriesParams) => StoryblokData<StoryData[], Error>
+  getStory: (slug: string, opts?: StoryParams) => StoryblokData<StoryData, Error>
 }
 
 const wrapInRef = <T> (value: T | Ref<T>) => isRef(value) ? value : ref(value)
@@ -125,10 +125,12 @@ export function useStoryblok (
   }
 
   const isStoryData = (data: any): data is StoryData => {
-    return typeof data?.id !== undefined
+    if(data === null) return false
+    return (typeof data.id !== 'undefined')
   }
   const isStoriesData = (data: any): data is StoryData[] => {
-    return typeof data?.id === undefined
+    if(data === null) return false
+    return (typeof data.id === 'undefined')
   }
 
   let bridgeInitialized = false
