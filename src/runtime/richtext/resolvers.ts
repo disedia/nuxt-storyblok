@@ -28,7 +28,7 @@ export type BlockResolver = Component | BlockResolverFunction
 
 export type BlockResolverWithChildren =
     | Component
-    | BlockResolverFunctionWithOptions<{ children: RenderedNode[] }>
+    | BlockResolverFunctionWithOptions<{ children: RenderedNode[], attrs?: any }>
 
 export type BlockResolverWithAttributes<A extends NodeAttributes> =
     | Component
@@ -94,20 +94,21 @@ export interface Resolvers {
     [NodeTypes.COMPONENT]: () => RenderedNode
   }
 
+
 export const defaultResolvers: Resolvers = {
   // Blocks
   [NodeTypes.DOCUMENT]: ({ children }) => children,
-  [NodeTypes.HEADING]: ({ children, attrs }) => h(`h${attrs.level}`, children),
-  [NodeTypes.PARAGRAPH]: ({ children }) => h('p', children),
+  [NodeTypes.HEADING]: ({ children, attrs }) => h(`h${attrs.level}`,{ class: attrs?.classes || ''}, children),
+  [NodeTypes.PARAGRAPH]: ({ children, attrs }) => h('p', { class: attrs?.classes || ''}, children),
   [NodeTypes.QUOTE]: ({ children }) => h('blockquote', children),
   // @TODO respect attrs.order?
-  [NodeTypes.OL_LIST]: ({ children }) => h('ol', children),
-  [NodeTypes.UL_LIST]: ({ children }) => h('ul', children),
-  [NodeTypes.LIST_ITEM]: ({ children }) => h('li', children),
+  [NodeTypes.OL_LIST]: ({ children, attrs }) => h('ol', { class: attrs?.classes || ''}, children),
+  [NodeTypes.UL_LIST]: ({ children, attrs }) => h('ul', { class: attrs?.classes || ''}, children),
+  [NodeTypes.LIST_ITEM]: ({ children, attrs }) => h('li', { class: attrs?.classes || ''}, children),
   [NodeTypes.CODE_BLOCK]: ({ children, attrs }) => h('pre', attrs, children),
   [NodeTypes.HR]: () => h('hr'),
   [NodeTypes.BR]: () => h('br'),
-  [NodeTypes.IMAGE]: ({ attrs }) => h('img', attrs),
+  [NodeTypes.IMAGE]: ({ attrs }) => h('img', { alt: attrs.alt, src: attrs.src, title: attrs.title, class: attrs?.classes || '' }),
   // Marks
   [NodeTypes.BOLD]: ({ text }) => h('b', text),
   [NodeTypes.STRONG]: ({ text }) => h('strong', text),
@@ -128,7 +129,7 @@ export const defaultResolvers: Resolvers = {
         break
       case LinkTypes.STORY: {
         const RouterLink = getRouterLinkComponent()
-        if (!RouterLink) { return h('a', { href, target: attrs.target }, text) }
+        if (!RouterLink) { return h('a', { href, target: attrs.target, class: attrs?.classes || '' }, text) }
 
         return h(
           RouterLink,
@@ -138,7 +139,7 @@ export const defaultResolvers: Resolvers = {
       }
     }
 
-    return h('a', { href: attrs.href, target: attrs.target }, text)
+    return h('a', { href: attrs.href, target: attrs.target, class: attrs?.classes || ''  }, text)
   },
   [NodeTypes.STYLED]: ({ text, attrs }) => h('span', attrs, text),
   // Component fallback

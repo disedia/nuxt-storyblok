@@ -40,7 +40,9 @@ export enum NodeTypes {
     NodeTypes.IMAGE,
   ]
   
-  export interface NodeAttributes {}
+  export interface NodeAttributes {
+    classes?: string
+  }
   
   export interface Node {
     type: NodeTypes
@@ -79,6 +81,7 @@ export enum NodeTypes {
   export interface DocumentNode extends NodeWithContent {
     type: NodeTypes.DOCUMENT
     content: RootNodes[]
+    attrs?: NodeAttributes
   }
   
   export type HeadingLevels = 1 | 2 | 3 | 4 | 5 | 6
@@ -96,6 +99,7 @@ export enum NodeTypes {
   export interface ParagraphNode extends NodeWithContent {
     type: NodeTypes.PARAGRAPH
     content: TextNode[]
+    attrs?: NodeAttributes
   }
   
   export interface ListItemNode extends NodeWithContent {
@@ -190,23 +194,23 @@ export enum NodeTypes {
     EMAIL = 'email',
   }
   
-  export interface LinkAttributes {
+  export interface LinkAttributes extends NodeAttributes {
     href: string
     uuid: string | null
     target: LinkTargets | null
     linktype: LinkTypes
   }
   
-  export interface LinkNode extends Node {
+  export interface LinkNode {
     type: NodeTypes.LINK
     attrs: LinkAttributes
   }
   
-  export interface StyledAttributes {
+  export interface StyledAttributes extends NodeAttributes {
     class: string
   }
   
-  export interface StyledNode extends Node {
+  export interface StyledNode {
     type: NodeTypes.STYLED
     attrs: StyledAttributes
   }

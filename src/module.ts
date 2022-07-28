@@ -2,6 +2,29 @@ import { defu } from 'defu'
 import { defineNuxtModule, addPlugin, addServerHandler, createResolver, addComponentsDir, addComponent, extendViteConfig } from '@nuxt/kit'
 import { runtimeDir } from './utils'
 
+export type RichtextResolver = {
+  paragraph: string
+  heading: string
+  image: string
+  ordered_list: string
+  bullet_list: string
+  list_item: string
+  code_block: string
+  link: string
+  [key: string]: string
+}
+
+export type RichtextClasses = {
+  paragraph: string
+  heading: Record < '1' | '2' | '3' | '4' | '5' | '6', string>
+  image: string
+  ordered_list: string
+  bullet_list: string
+  list_item: string
+  code_block: string
+  link: string 
+}
+
 export interface ModuleOptions {
 
     /**
@@ -53,6 +76,11 @@ export interface ModuleOptions {
        */
       enabled?: boolean
     }
+
+    richtext?: {
+      resolvers?: RichtextResolver
+      classes?: RichtextClasses
+    }
 }
 
 export default defineNuxtModule<ModuleOptions>({
@@ -85,24 +113,28 @@ export default defineNuxtModule<ModuleOptions>({
       accessToken: options.accessToken,
       version: options.version,
       editor: {
-        path: options.editor.path,
-        previewUrl: options.editor.previewUrl
+        path: options.editor?.path,
+        previewUrl: options.editor?.previewUrl
       },
       bridge: {
-        enabled: options.bridge.enabled || nuxt.options.dev
+        enabled: options.bridge?.enabled || nuxt.options.dev
+      },
+      richtext: {
+        resolvers: options.richtext?.resolvers || {},
+        classes: options.richtext?.classes || {}
       }
     })
     /*
     * PreviewToken should be kept secret and should only be exposed in editor mode, use accessToken as backup
     */
-    nuxt.options.runtimeConfig.storyblokPreviewToken = options.editor.previewToken || options.accessToken
+    nuxt.options.runtimeConfig.storyblokPreviewToken = options.editor?.previewToken || options.accessToken
 
     // Transpile runtime
     nuxt.options.build.transpile.push(runtimeDir)
 
     // Add supabase session endpoint to store the session on server-side
     addServerHandler({
-      route: options.editor.path,
+      route: options.editor?.path,
       handler: resolve(runtimeDir, 'server/storyblokHandler')
     })
 
@@ -114,7 +146,7 @@ export default defineNuxtModule<ModuleOptions>({
     addPlugin(resolve(runtimeDir, 'plugins', 'storyblok'))
 
     // add app components dir for storyblok user created components
-    addComponentsDir({ path: '~/storyblok', global: true, pathPrefix: false })
+    addComponentsDir({ path: '~/storyblok', global: true, pathPrefix: true })
 
     // add storyblok helper components
     addComponent({

@@ -31,16 +31,18 @@ const vEditableDirective: ObjectDirective = {
 export default defineNuxtPlugin((nuxtApp) => {
   // Add Storyblok Plugin
   nuxtApp.vueApp.directive('editable', vEditableDirective)
-  // Add richtext renderer
+
+  const { storyblok } = useRuntimeConfig().public
+
   /*
-  * TODO: enable more features to extend the renderer
+  * Richtext options -> custom resolvers and classes are stored in runtimeConfig.public.storyblok
+  * TODO: check if it the right place to store this
   */
-  const options = {}
-  const renderer = createRenderer(options)
+  const renderer = createRenderer(storyblok.richtext)
   // write storyblok runtime context
   nuxtApp._storyblok = {} as StoryblokRuntime
   nuxtApp._storyblok.richtextRenderer = renderer
-  nuxtApp._storyblok.version = useRuntimeConfig().public.storyblok.version
+  nuxtApp._storyblok.version = storyblok.version
   // check if storyblok is in editor mode
   const { query } = useRoute()
   // TODO: verify storyblok query params for security reasons

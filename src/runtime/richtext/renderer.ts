@@ -1,4 +1,4 @@
-import { type VNode, createTextVNode, h, isVNode } from 'vue'
+import { type VNode, createTextVNode, h, isVNode, resolveComponent } from 'vue'
 import {
   type BlockNodes,
   type BlockNodesWithAttributes,
@@ -32,6 +32,7 @@ export type MergedResolvers = Required<ResolversOption>
 
 export interface RendererOptions {
   resolvers: MergedResolvers
+  classes: Record<NodeTypes,string>,
   omitParagraphInListItems?: boolean
 }
 
@@ -40,10 +41,9 @@ export interface RichtextRenderer {
 }
 
 export function createRenderer (options?: Partial<RendererOptions>): RichtextRenderer {
-  const {
-    resolvers = options?.resolvers || { ...defaultResolvers, components: {} },
-    omitParagraphInListItems = false
-  } = options || {}
+  let resolvers = { ...defaultResolvers, ...options?.resolvers }
+  let classes = options?.classes || {}
+  let omitParagraphInListItems = options.omitParagraphInListItems || false
 
   const renderNode = (node: Node) => {
     if (isTextNode(node)) {
@@ -162,9 +162,14 @@ export function createRenderer (options?: Partial<RendererOptions>): RichtextRen
   ) => (node.content && node.content.length ? renderNodeList(node.content) : [])
 
   function resolveBlockNodeWithContent (node: BlockNodesWithContent) {
-    const resolver = resolvers[node.type]
-    let children = renderChildren(node)
 
+    const resolver = resolvers[node.type]
+    //add classes to attrs
+    if(!node.attrs) node.attrs = {}
+    if(classes[node.type]) node.attrs.classes = classes[node.type]
+
+    //render children if available
+    let children = renderChildren(node)
     if (
       omitParagraphInListItems &&
       node.type === NodeTypes.LIST_ITEM &&
@@ -174,27 +179,64 @@ export function createRenderer (options?: Partial<RendererOptions>): RichtextRen
       children = renderNodeList(node.content[0].content)
     }
 
-    if (isComponentResolver(resolver)) { return h(resolver, null, { default: () => children }) }
-
-    return resolver({ children })
+    //try to resolve the component, if only component string is provided
+    if(typeof resolver === 'string'){
+      const component = resolveComponent(resolver)
+      return h(component, node.attrs, { default: () => children }) 
+    }
+    // if component is already resolved (e.g. from import)
+    if (isComponentResolver(resolver)) { 
+      return h(resolver, node.attrs, { default: () => children }) 
+    }
+    // if resolver is a vue render function
+    return resolver({ children, attrs: node.attrs })
   }
 
   function resolveBlockNodeWithAttributes (node: BlockNodesWithAttributes) {
     const resolver = resolvers[node.type]
+    //add classes to attrs
+    if(classes[node.type]) node.attrs.classes = classes[node.type]
 
+    //try to resolve the component, if only component string is provided
+    if(typeof resolver === 'string'){
+      const component = resolveComponent(resolver)
+      return h(component, node.attrs) 
+    }
+    // if component is already resolved (e.g. from import)
     if (isComponentResolver(resolver)) { return h(resolver, node.attrs) }
 
+    // if resolver is a vue render function
     return resolver({ attrs: node.attrs })
   }
 
   function resolveBlockNodeWithContentAndAttributes (
     node: BlockNodesWithContentAndAttributes
   ) {
+
     const resolver = resolvers[node.type]
+    //add classes to attrs -> id heading classes is an object
+    if(node.type === NodeTypes.HEADING){
+      if(classes[node.type]){
+        if(classes[node.type][node.attrs.level]) {
+          if(classes[node.type]) node.attrs.classes = classes[node.type][node.attrs.level]
+        }
+      }
+    }else{
+      if(classes[node.type]) node.attrs.classes = classes[node.type]
+    }
+
+    //render children
     const children = renderChildren(node)
 
+    //try to resolve the component, if only component string is provided
+    if(typeof resolver === 'string'){
+      const component = resolveComponent(resolver)
+      return h(component, node.attrs, { default: () => children }) 
+    }
+    // if component is already resolved (e.g. from import)
     if (isComponentResolver(resolver)) { return h(resolver, node.attrs, { default: () => children }) }
 
+    // if resolver is a vue render function
     return resolver({
       children,
       attrs: node.attrs as never
@@ -222,13 +264,27 @@ export function createRenderer (options?: Partial<RendererOptions>): RichtextRen
     text: VNode
   ) {
     const resolver = resolvers[node.type]
+    //add classes to attrs
+    if(classes[node.type]) node.attrs.classes = classes[node.type]
 
+    //try to resolve the component, if only component string is provided
+    if(typeof resolver === 'string'){
+      const component = resolveComponent(resolver)
+      return h(component, node.attrs, { default: () => children }) 
+    }
+
+    // if component is already resolved (e.g. from import)
     if (isComponentResolver(resolver)) { return h(resolver, node.attrs, { default: () => text }) }
 
+    // if resolver is a vue render function
     return resolver({ text, attrs: node.attrs as never })
   }
 
-  const renderDocument = (node: Node) => {
+  const renderDocument = (node: Node, options: RendererOptions) => {
+    // merge options for classses and resolvers
+    classes = mergeDeep(classes, options.classes)
+    resolvers = mergeDeep(resolvers, options.resolvers)
+    if(options.omitParagraphInListItems !== null) omitParagraphInListItems = options.omitParagraphInListItems
     if (Array.isArray(node)) { return renderNodeList(node) }
     return renderNode(node)
   }
@@ -240,4 +296,34 @@ export function isComponentResolver (
   resolver: Resolvers[keyof Resolvers]
 ): resolver is Component {
   return typeof resolver !== 'function' && !isVNode(resolver)
+}
+
+/**
+* Performs a deep merge of objects and returns new object. Does not modify
+* objects (immutable) and merges arrays via concatenation.
+*
+* @param {...object} objects - Objects to merge
+* @returns {object} New object with merged key/values
+*/
+function mergeDeep(...objects) {
+  const isObject = obj => obj && typeof obj === 'object';
+  
+  return objects.reduce((prev, obj) => {
+    Object.keys(obj).forEach(key => {
+      const pVal = prev[key];
+      const oVal = obj[key];
+      
+      if (Array.isArray(pVal) && Array.isArray(oVal)) {
+        prev[key] = pVal.concat(...oVal);
+      }
+      else if (isObject(pVal) && isObject(oVal)) {
+        prev[key] = mergeDeep(pVal, oVal);
+      }
+      else {
+        prev[key] = oVal;
+      }
+    });
+    
+    return prev;
+  }, {});
 }
