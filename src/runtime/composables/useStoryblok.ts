@@ -125,11 +125,11 @@ export function useStoryblok (
   }
 
   const isStoryData = (data: any): data is StoryData => {
-    if(data === null) return false
+    if (data === null) { return false }
     return (typeof data.id !== 'undefined')
   }
   const isStoriesData = (data: any): data is StoryData[] => {
-    if(data === null) return false
+    if (data === null) { return false }
     return (typeof data.id === 'undefined')
   }
 

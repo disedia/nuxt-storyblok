@@ -94,17 +94,16 @@ export interface Resolvers {
     [NodeTypes.COMPONENT]: () => RenderedNode
   }
 
-
 export const defaultResolvers: Resolvers = {
   // Blocks
   [NodeTypes.DOCUMENT]: ({ children }) => children,
-  [NodeTypes.HEADING]: ({ children, attrs }) => h(`h${attrs.level}`,{ class: attrs?.classes || ''}, children),
-  [NodeTypes.PARAGRAPH]: ({ children, attrs }) => h('p', { class: attrs?.classes || ''}, children),
+  [NodeTypes.HEADING]: ({ children, attrs }) => h(`h${attrs.level}`, { class: attrs?.classes || '' }, children),
+  [NodeTypes.PARAGRAPH]: ({ children, attrs }) => h('p', { class: attrs?.classes || '' }, children),
   [NodeTypes.QUOTE]: ({ children }) => h('blockquote', children),
   // @TODO respect attrs.order?
-  [NodeTypes.OL_LIST]: ({ children, attrs }) => h('ol', { class: attrs?.classes || ''}, children),
-  [NodeTypes.UL_LIST]: ({ children, attrs }) => h('ul', { class: attrs?.classes || ''}, children),
-  [NodeTypes.LIST_ITEM]: ({ children, attrs }) => h('li', { class: attrs?.classes || ''}, children),
+  [NodeTypes.OL_LIST]: ({ children, attrs }) => h('ol', { class: attrs?.classes || '' }, children),
+  [NodeTypes.UL_LIST]: ({ children, attrs }) => h('ul', { class: attrs?.classes || '' }, children),
+  [NodeTypes.LIST_ITEM]: ({ children, attrs }) => h('li', { class: attrs?.classes || '' }, children),
   [NodeTypes.CODE_BLOCK]: ({ children, attrs }) => h('pre', attrs, children),
   [NodeTypes.HR]: () => h('hr'),
   [NodeTypes.BR]: () => h('br'),
@@ -139,7 +138,7 @@ export const defaultResolvers: Resolvers = {
       }
     }
 
-    return h('a', { href: attrs.href, target: attrs.target, class: attrs?.classes || ''  }, text)
+    return h('a', { href: attrs.href, target: attrs.target, class: attrs?.classes || '' }, text)
   },
   [NodeTypes.STYLED]: ({ text, attrs }) => h('span', attrs, text),
   // Component fallback

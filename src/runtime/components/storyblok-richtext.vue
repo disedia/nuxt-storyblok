@@ -4,15 +4,15 @@ import type { Richtext } from '@storyblok/js'
 import { useNuxtApp } from '#imports'
 
 export type RichtextResolver = {
-  paragraph: string
-  heading: string
-  image: string
-  ordered_list: string
-  bullet_list: string
-  list_item: string
-  code_block: string
-  link: string
-  [key: string]: string
+  paragraph?: string
+  heading?: string
+  image?: string
+  ordered_list?: string
+  bullet_list?: string
+  list_item?: string
+  code_block?: string
+  link?: string
+  components?: Record < string, string >
 }
 
 export type RichtextClassesHeadings = {
@@ -32,7 +32,8 @@ export type RichtextClasses = {
   bullet_list?: string
   list_item?: string
   code_block?: string
-  link?: string 
+  link?: string
+  components?: Record < string, string >
 }
 
 export default defineComponent({

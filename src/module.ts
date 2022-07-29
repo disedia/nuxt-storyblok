@@ -3,26 +3,36 @@ import { defineNuxtModule, addPlugin, addServerHandler, createResolver, addCompo
 import { runtimeDir } from './utils'
 
 export type RichtextResolver = {
-  paragraph: string
-  heading: string
-  image: string
-  ordered_list: string
-  bullet_list: string
-  list_item: string
-  code_block: string
-  link: string
-  [key: string]: string
+  paragraph?: string
+  heading?: string
+  image?: string
+  ordered_list?: string
+  bullet_list?: string
+  list_item?: string
+  code_block?: string
+  link?: string
+  components?: Record<string, string>
+}
+
+export type RichtextClassesHeadings = {
+  '1'?: string
+  '2'?: string
+  '3'?: string
+  '4'?: string
+  '5'?: string
+  '6'?: string
 }
 
 export type RichtextClasses = {
-  paragraph: string
-  heading: Record < '1' | '2' | '3' | '4' | '5' | '6', string>
-  image: string
-  ordered_list: string
-  bullet_list: string
-  list_item: string
-  code_block: string
-  link: string 
+  paragraph?: string
+  heading?: RichtextClassesHeadings
+  image?: string
+  ordered_list?: string
+  bullet_list?: string
+  list_item?: string
+  code_block?: string
+  link?: string
+  components?: Record < string, string >
 }
 
 export interface ModuleOptions {

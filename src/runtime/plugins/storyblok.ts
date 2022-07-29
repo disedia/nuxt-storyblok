@@ -49,11 +49,11 @@ export default defineNuxtPlugin((nuxtApp) => {
   if (query._storyblok) {
     nuxtApp._storyblok.previewMode = true
     // for security reasons, previewToken will be written to client only if called from storyblok editor or preview mode
-    if(process.server){
-      nuxtApp.payload[`_sbPreviewToken`] = useRuntimeConfig().storyblokPreviewToken
+    if (process.server) {
+      nuxtApp.payload._sbPreviewToken = useRuntimeConfig().storyblokPreviewToken
     }
     // add preview token to runtime if in editor or preview mode
-    nuxtApp._storyblok.previewToken = nuxtApp.payload[`_sbPreviewToken`]
+    nuxtApp._storyblok.previewToken = nuxtApp.payload._sbPreviewToken
     nuxtApp._storyblok.version = 'draft'
   }
 })

@@ -30,9 +30,30 @@ export type ResolversOption = Resolvers & {
 
 export type MergedResolvers = Required<ResolversOption>
 
+export type RichtextClassesHeadings = {
+  '1'?: string
+  '2'?: string
+  '3'?: string
+  '4'?: string
+  '5'?: string
+  '6'?: string
+}
+
+export type RichtextClasses = {
+  paragraph?: string
+  heading?: RichtextClassesHeadings
+  image?: string
+  ordered_list?: string
+  bullet_list?: string
+  list_item?: string
+  code_block?: string
+  link?: string
+  components?: Record < string, string >
+}
+
 export interface RendererOptions {
   resolvers: MergedResolvers
-  classes: Record<NodeTypes,string>,
+  classes: RichtextClasses,
   omitParagraphInListItems?: boolean
 }
 
@@ -41,9 +62,13 @@ export interface RichtextRenderer {
 }
 
 export function createRenderer (options?: Partial<RendererOptions>): RichtextRenderer {
-  let resolvers = { ...defaultResolvers, ...options?.resolvers }
-  let classes = options?.classes || {}
-  let omitParagraphInListItems = options.omitParagraphInListItems || false
+  const globalConfigResolvers = { ...defaultResolvers, ...options?.resolvers }
+  const globalConfigClasses = options?.classes || {}
+  const globalConfigOmitParagraphInListItems = options.omitParagraphInListItems || false
+
+  let resolvers = {} as ResolversOption
+  let classes = {} as RichtextClasses
+  let omitParagraphInListItems = false
 
   const renderNode = (node: Node) => {
     if (isTextNode(node)) {
@@ -141,7 +166,17 @@ export function createRenderer (options?: Partial<RendererOptions>): RichtextRen
       const { component, _uid, ...fields } = body
       const resolver = resolvers.components[component]
 
-      if (resolver) {
+      const props = {}
+      if (classes?.components) {
+        if (classes.components[component]) { props.classes = classes.components[component] }
+      }
+
+      if (typeof resolver === 'string') {
+        const resolvedComponent = resolveComponent(resolver)
+        components.push(
+          h(resolvedComponent, { blok: body, classes: props.classes })
+        )
+      } else if (isComponentResolver(resolver)) {
         components.push(
           resolver({ id: node.attrs.id, component, _uid, fields })
         )
@@ -162,13 +197,12 @@ export function createRenderer (options?: Partial<RendererOptions>): RichtextRen
   ) => (node.content && node.content.length ? renderNodeList(node.content) : [])
 
   function resolveBlockNodeWithContent (node: BlockNodesWithContent) {
-
     const resolver = resolvers[node.type]
-    //add classes to attrs
-    if(!node.attrs) node.attrs = {}
-    if(classes[node.type]) node.attrs.classes = classes[node.type]
+    // add classes to attrs
+    if (!node.attrs) { node.attrs = {} }
+    if (classes[node.type]) { node.attrs.classes = classes[node.type] }
 
-    //render children if available
+    // render children if available
     let children = renderChildren(node)
     if (
       omitParagraphInListItems &&
@@ -179,14 +213,14 @@ export function createRenderer (options?: Partial<RendererOptions>): RichtextRen
       children = renderNodeList(node.content[0].content)
     }
 
-    //try to resolve the component, if only component string is provided
-    if(typeof resolver === 'string'){
+    // try to resolve the component, if only component string is provided
+    if (typeof resolver === 'string') {
       const component = resolveComponent(resolver)
-      return h(component, node.attrs, { default: () => children }) 
+      return h(component, node.attrs, { default: () => children })
     }
     // if component is already resolved (e.g. from import)
-    if (isComponentResolver(resolver)) { 
-      return h(resolver, node.attrs, { default: () => children }) 
+    if (isComponentResolver(resolver)) {
+      return h(resolver, node.attrs, { default: () => children })
     }
     // if resolver is a vue render function
     return resolver({ children, attrs: node.attrs })
@@ -194,13 +228,13 @@ export function createRenderer (options?: Partial<RendererOptions>): RichtextRen
 
   function resolveBlockNodeWithAttributes (node: BlockNodesWithAttributes) {
     const resolver = resolvers[node.type]
-    //add classes to attrs
-    if(classes[node.type]) node.attrs.classes = classes[node.type]
+    // add classes to attrs
+    if (classes[node.type]) { node.attrs.classes = classes[node.type] }
 
-    //try to resolve the component, if only component string is provided
-    if(typeof resolver === 'string'){
+    // try to resolve the component, if only component string is provided
+    if (typeof resolver === 'string') {
       const component = resolveComponent(resolver)
-      return h(component, node.attrs) 
+      return h(component, node.attrs)
     }
     // if component is already resolved (e.g. from import)
     if (isComponentResolver(resolver)) { return h(resolver, node.attrs) }
@@ -212,26 +246,23 @@ export function createRenderer (options?: Partial<RendererOptions>): RichtextRen
   function resolveBlockNodeWithContentAndAttributes (
     node: BlockNodesWithContentAndAttributes
   ) {
-
     const resolver = resolvers[node.type]
-    //add classes to attrs -> id heading classes is an object
-    if(node.type === NodeTypes.HEADING){
-      if(classes[node.type]){
-        if(classes[node.type][node.attrs.level]) {
-          if(classes[node.type]) node.attrs.classes = classes[node.type][node.attrs.level]
+    // add classes to attrs -> id heading classes is an object
+    if (node.type === NodeTypes.HEADING) {
+      if (classes[node.type]) {
+        if (classes[node.type][node.attrs.level]) {
+          if (classes[node.type]) { node.attrs.classes = classes[node.type][node.attrs.level] }
         }
       }
-    }else{
-      if(classes[node.type]) node.attrs.classes = classes[node.type]
-    }
+    } else if (classes[node.type]) { node.attrs.classes = classes[node.type] }
 
-    //render children
+    // render children
     const children = renderChildren(node)
 
-    //try to resolve the component, if only component string is provided
-    if(typeof resolver === 'string'){
+    // try to resolve the component, if only component string is provided
+    if (typeof resolver === 'string') {
       const component = resolveComponent(resolver)
-      return h(component, node.attrs, { default: () => children }) 
+      return h(component, node.attrs, { default: () => children })
     }
     // if component is already resolved (e.g. from import)
     if (isComponentResolver(resolver)) { return h(resolver, node.attrs, { default: () => children }) }
@@ -264,13 +295,13 @@ export function createRenderer (options?: Partial<RendererOptions>): RichtextRen
     text: VNode
   ) {
     const resolver = resolvers[node.type]
-    //add classes to attrs
-    if(classes[node.type]) node.attrs.classes = classes[node.type]
+    // add classes to attrs
+    if (classes[node.type]) { node.attrs.classes = classes[node.type] }
 
-    //try to resolve the component, if only component string is provided
-    if(typeof resolver === 'string'){
+    // try to resolve the component, if only component string is provided
+    if (typeof resolver === 'string') {
       const component = resolveComponent(resolver)
-      return h(component, node.attrs, { default: () => children }) 
+      return h(component, node.attrs, { default: () => children })
     }
 
     // if component is already resolved (e.g. from import)
@@ -282,9 +313,9 @@ export function createRenderer (options?: Partial<RendererOptions>): RichtextRen
 
   const renderDocument = (node: Node, options: RendererOptions) => {
     // merge options for classses and resolvers
-    classes = mergeDeep(classes, options.classes)
-    resolvers = mergeDeep(resolvers, options.resolvers)
-    if(options.omitParagraphInListItems !== null) omitParagraphInListItems = options.omitParagraphInListItems
+    classes = mergeDeep(globalConfigClasses, options.classes)
+    resolvers = mergeDeep(globalConfigResolvers, options.resolvers)
+    omitParagraphInListItems = options?.omitParagraphInListItems || globalConfigOmitParagraphInListItems
     if (Array.isArray(node)) { return renderNodeList(node) }
     return renderNode(node)
   }
@@ -305,25 +336,23 @@ export function isComponentResolver (
 * @param {...object} objects - Objects to merge
 * @returns {object} New object with merged key/values
 */
-function mergeDeep(...objects) {
-  const isObject = obj => obj && typeof obj === 'object';
-  
+function mergeDeep (...objects) {
+  const isObject = obj => obj && typeof obj === 'object'
+
   return objects.reduce((prev, obj) => {
-    Object.keys(obj).forEach(key => {
-      const pVal = prev[key];
-      const oVal = obj[key];
-      
+    Object.keys(obj).forEach((key) => {
+      const pVal = prev[key]
+      const oVal = obj[key]
+
       if (Array.isArray(pVal) && Array.isArray(oVal)) {
-        prev[key] = pVal.concat(...oVal);
+        prev[key] = pVal.concat(...oVal)
+      } else if (isObject(pVal) && isObject(oVal)) {
+        prev[key] = mergeDeep(pVal, oVal)
+      } else {
+        prev[key] = oVal
       }
-      else if (isObject(pVal) && isObject(oVal)) {
-        prev[key] = mergeDeep(pVal, oVal);
-      }
-      else {
-        prev[key] = oVal;
-      }
-    });
-    
-    return prev;
-  }, {});
+    })
+
+    return prev
+  }, {})
 }
