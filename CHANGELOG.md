@@ -4,10 +4,6 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [0.0.19](https://github.com/disedia/nuxt-storyblok/compare/v0.0.20...v0.0.19) (2022-09-06)
 
-### [0.0.20](https://github.com/disedia/nuxt-storyblok/compare/v0.0.19...v0.0.20) (2022-09-06)
-
-### [0.0.19](https://github.com/disedia/nuxt-storyblok/compare/v0.0.17...v0.0.19) (2022-07-29)
-
 ### [0.0.17](https://github.com/disedia/nuxt-storyblok/compare/v0.0.11...v0.0.17) (2022-07-21)
 
 ### [0.0.11](https://github.com/disedia/storyblok-nuxt-module/compare/v0.0.10...v0.0.11) (2022-06-15)
