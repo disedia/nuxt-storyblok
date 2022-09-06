@@ -110,7 +110,7 @@ export function useStoryblok (
       storyblokData.data.value = data
       storyblokData.error.value = null
     }).catch((error: any) => {
-      console.error(error)
+      console.error('There was an error during fetching data from Storyblok API.')
       storyblokData.error.value = error
       storyblokData.data.value = null
     }).finally(() => {

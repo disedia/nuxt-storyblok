@@ -10,9 +10,6 @@ export default defineNuxtConfig({
   },
   theme: {},
   modules: ['@nuxthq/admin', '@docus/github', 'vue-plausible'],
-  plausible: {
-    domain: 'ionic.roe.dev'
-  },
   tailwindcss: {
     config: {
       important: true,

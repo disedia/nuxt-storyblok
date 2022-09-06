@@ -95,10 +95,10 @@ export interface ModuleOptions {
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
-    name: 'storyblok-nuxt-module',
+    name: 'nuxt-storyblok',
     configKey: 'storyblok',
     compatibility: {
-      nuxt: '^3.0.0'
+      nuxt: '>=3.0.0'
     }
   },
   defaults: {

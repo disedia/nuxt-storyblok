@@ -1,2 +1,2 @@
-# storyblok-nuxt-module
+# nuxt-storyblok
 Storyblok module for Nuxt3
