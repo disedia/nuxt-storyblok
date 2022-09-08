@@ -98,7 +98,7 @@ export default defineNuxtModule<ModuleOptions>({
     name: 'nuxt-storyblok',
     configKey: 'storyblok',
     compatibility: {
-      nuxt: '>=3.0.0'
+      nuxt: '^3.0.0-rc.3'
     }
   },
   defaults: {

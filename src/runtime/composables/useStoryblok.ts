@@ -151,10 +151,12 @@ export function useStoryblok (
       if (queryOptions.resolve_relations) {
         bridgeOptions.resolveRelations = queryOptions.resolve_relations.trim().split(',') as [string]
       }
-      // set custom parent
-      if (window.location.hostname === 'localhost') {
+      // set custom parent if localhost or not the storyblok app
+      if (window.location.hostname === 'localhost' || window.location.hostname !== 'app.storyblok.com') {
         bridgeOptions.customParent = window.location.origin
-      } else if (storyblok.editor.previewUrl !== '') {
+      } 
+      // force setting previewUrl if set
+      else if (storyblok.editor.previewUrl !== '') {
         bridgeOptions.customParent = storyblok.editor.previewUrl
       }
       useStoryblokBridge(storyIds, (updatedStory: StoryData) => {
