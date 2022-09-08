@@ -154,9 +154,7 @@ export function useStoryblok (
       // set custom parent if localhost or not the storyblok app
       if (window.location.hostname === 'localhost' || window.location.hostname !== 'app.storyblok.com') {
         bridgeOptions.customParent = window.location.origin
-      } 
-      // force setting previewUrl if set
-      else if (storyblok.editor.previewUrl !== '') {
+      } else if (storyblok.editor.previewUrl !== '') {
         bridgeOptions.customParent = storyblok.editor.previewUrl
       }
       useStoryblokBridge(storyIds, (updatedStory: StoryData) => {
