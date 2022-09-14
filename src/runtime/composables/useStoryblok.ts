@@ -15,7 +15,8 @@ export interface UseStoryblokOptions {
   server?: boolean
   lazy?: boolean
   watch?: MultiWatchSources
-  initialCache?: boolean
+  initialCache?: boolean,
+  bridge?: boolean
 }
 
 export interface RefreshOptions {
@@ -49,6 +50,7 @@ export function useStoryblok (
   options = { server: true, ...options }
   // Apply defaults
   options.server = options.server ?? true
+  options.bridge = options.bridge ?? true
   // Setup nuxt instance payload
   const nuxt = useNuxtApp()
   const { storyblok } = useRuntimeConfig().public
@@ -144,7 +146,7 @@ export function useStoryblok (
       data.map(story => storyIds.push(story.id))
     }
     // enable bride on client side, if story is available and bridge is enabled
-    if (process.client && !bridgeInitialized && storyIds.length > 0 && (storyblok.bridge.enabled || nuxt._storyblok.forceBridge)) {
+    if (process.client && !bridgeInitialized && options.bridge && storyIds.length > 0 && (storyblok.bridge.enabled || nuxt._storyblok.forceBridge)) {
       const bridgeOptions = {
         preventClicks: true
       } as StoryblokBridgeConfigV2

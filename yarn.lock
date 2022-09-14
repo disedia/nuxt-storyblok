@@ -436,7 +436,7 @@
   resolved "https://registry.yarnpkg.com/@nuxt/devalue/-/devalue-2.0.0.tgz#c7bd7e9a516514e612d5d2e511ffc399e0eac322"
   integrity sha512-YBI/6o2EBz02tdEJRBK8xkt3zvOFOWlLBf7WKYGBsSYSRtjjgrqPe2skp6VLLmKx5WbHHDNcW+6oACaurxGzeA==
 
-"@nuxt/kit@3.0.0-rc.9", "@nuxt/kit@^3.0.0-rc.3", "@nuxt/kit@^3.0.0-rc.9":
+"@nuxt/kit@3.0.0-rc.9", "@nuxt/kit@^3.0.0-rc.9":
   version "3.0.0-rc.9"
   resolved "https://registry.yarnpkg.com/@nuxt/kit/-/kit-3.0.0-rc.9.tgz#05d9721a7b7bf8538cd6f501ed0692cf0171bc2f"
   integrity sha512-Y+db0iw/1pKiLMEG7L/6HCq8O9xsbVJT/ksePY1Q8o3fV40Q9gCWI0YumCIzVdBiAFFEOCNASsxmGj7kPSdpCA==
@@ -680,10 +680,10 @@
     estree-walker "^2.0.1"
     picomatch "^2.2.2"
 
-"@storyblok/js@^1.6.1":
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/@storyblok/js/-/js-1.8.0.tgz#cda25bac9b27de2b02854182c3b0dd0cf1a0f50d"
-  integrity sha512-A17atNGGzWXvSumzBeT89aLIF/Vx7/fpUn+QdrOPlPI+YrSdTJW0D1o2NOY0N9HW+FGY1y4fxFVGIx14L+ZkoA==
+"@storyblok/js@^1.8.3":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@storyblok/js/-/js-1.8.3.tgz#a0e0350aa048dc949b713d282411dc0385edfb84"
+  integrity sha512-drSLsso7TfhgcaVmEscU7VoHMZOi7cT1xGfNcCDKYwM9W06i7+AMHBRzwoQnd8VKejsaFXdG86+gH5xb1/sJXA==
   dependencies:
     storyblok-js-client "^4.5.6"
 
@@ -4443,7 +4443,7 @@ nuxi@3.0.0-rc.9:
   optionalDependencies:
     fsevents "~2.3.2"
 
-nuxt@^3.0.0-rc.3:
+nuxt@^3.0.0-rc.9:
   version "3.0.0-rc.9"
   resolved "https://registry.yarnpkg.com/nuxt/-/nuxt-3.0.0-rc.9.tgz#a3bcceaffcab917b09238e3db45e73b646516ed4"
   integrity sha512-fXaqm+Vha/p+MztueluJdEc9hqj6gwjFeuCgOBwIYnV+3nFbHu3EAro8QbPcoYZaj5oot+qY7YuyGczBvlNZuQ==
@@ -4523,7 +4523,7 @@ object.values@^1.1.5:
     define-properties "^1.1.3"
     es-abstract "^1.19.1"
 
-ohash@^0.1.0, ohash@^0.1.5:
+ohash@^0.1.5:
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/ohash/-/ohash-0.1.5.tgz#7ba53b68c41fc72612ed75942b8f6da3b5d5bbda"
   integrity sha512-qynly1AFIpGWEAW88p6DhMNqok/Swb52/KsiU+Toi7er058Ptvno3tkfTML6wYcEgFgp2GsUziW4Nqn62ciuyw==
@@ -4757,6 +4757,11 @@ pathe@^0.3.0, pathe@^0.3.3, pathe@^0.3.4, pathe@^0.3.5:
   version "0.3.5"
   resolved "https://registry.yarnpkg.com/pathe/-/pathe-0.3.5.tgz#87e5c1164ded1bebeb9dea5dab63563144062303"
   integrity sha512-grU/QeYP0ChuE5kjU2/k8VtAeODzbernHlue0gTa27+ayGIu3wqYBIPGfP9r5xSqgCgDd4nWrjKXEfxMillByg==
+
+pathe@^0.3.7:
+  version "0.3.7"
+  resolved "https://registry.yarnpkg.com/pathe/-/pathe-0.3.7.tgz#83860c096cb11d9614c17e0d70d91622931676ce"
+  integrity sha512-yz7GK+kSsS27x727jtXpd5VT4dDfP/JDIQmaowfxyWCnFjOWtE1VIh7i6TzcSfzW0n4+bRQztj1VdKnITNq/MA==
 
 perfect-debounce@^0.1.3:
   version "0.1.3"
