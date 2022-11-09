@@ -1,5 +1,5 @@
 import { defu } from 'defu'
-import { defineNuxtModule, addPlugin, addServerHandler, createResolver, addComponentsDir, addComponent, extendViteConfig } from '@nuxt/kit'
+import { defineNuxtModule, addPlugin, addServerHandler, createResolver, addComponentsDir, addComponent, addImportsDir, extendViteConfig } from '@nuxt/kit'
 import { runtimeDir } from './utils'
 
 export type RichtextResolver = {
@@ -98,7 +98,7 @@ export default defineNuxtModule<ModuleOptions>({
     name: 'nuxt-storyblok',
     configKey: 'storyblok',
     compatibility: {
-      nuxt: '^3.0.0-rc.3'
+      nuxt: '^3.0.0-rc.12'
     }
   },
   defaults: {
@@ -148,9 +148,7 @@ export default defineNuxtModule<ModuleOptions>({
       handler: resolve(runtimeDir, 'server/storyblokHandler')
     })
 
-    nuxt.hook('autoImports:dirs', (dirs) => {
-      dirs.push(resolve(runtimeDir, 'composables'))
-    })
+    addImportsDir(resolve(runtimeDir, 'composables'))
 
     // Add richtext vue plugin --> cc: https://github.com/MarvinRudolph/storyblok-rich-text-renderer
     addPlugin(resolve(runtimeDir, 'plugins', 'storyblok'))

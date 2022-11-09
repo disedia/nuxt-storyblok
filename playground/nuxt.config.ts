@@ -1,9 +1,6 @@
-import { defineNuxtConfig } from 'nuxt'
-import StoryblokModule from '..'
-
 export default defineNuxtConfig({
   modules: [
-    StoryblokModule
+    'nuxt-storyblok'
   ],
   storyblok: {
     accessToken: '<access-token>'
