@@ -1,9 +1,10 @@
-import { defineEventHandler, getHeader } from 'h3'
+import { eventHandler, H3Event } from 'h3'
 import { useRuntimeConfig } from '#imports'
 
-export default defineEventHandler((event) => {
+export default eventHandler((event: H3Event) => {
   const { storyblok } = useRuntimeConfig().public
-  const host = getHeader(event, 'host')
+  // Bug in h3???: check when fixed -> getRequestHeader(event, 'host') currently not working
+  const host = event.req.rawHeaders.includes('host') ? event.req.rawHeaders[event.req.rawHeaders.indexOf('host') + 1] : ''
   const previewURL = host?.includes('localhost') ? `http://${host}` : storyblok.editor.previewUrl
   const isLocalDev = !!host?.includes('localhost')
   const forcePreviewUrl = storyblok.editor.previewUrl !== ''
