@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.29](https://github.com/disedia/nuxt-storyblok/compare/v0.0.28...v0.0.29) (2022-11-14)
+
+
+### Bug Fixes
+
+* read header with h3 helper function ([ff53d45](https://github.com/disedia/nuxt-storyblok/commit/ff53d451bd8a2fc2145369b2b2cff443b536ce09))
+
 ### [0.0.28](https://github.com/disedia/nuxt-storyblok/compare/v0.0.27...v0.0.28) (2022-11-09)
 
 ### [0.0.27](https://github.com/disedia/nuxt-storyblok/compare/v0.0.26...v0.0.27) (2022-11-09)
